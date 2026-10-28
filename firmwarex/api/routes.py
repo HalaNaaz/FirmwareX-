@@ -1,10 +1,8 @@
 """FastAPI route definitions for FirmwareX control plane and analysis pipeline."""
 
-import shutil
 import uuid
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from fastapi.responses import JSONResponse
@@ -17,13 +15,12 @@ from firmwarex.config import (
     UPLOADS_DIR,
     ensure_directories,
 )
-from firmwarex.core.elf_auditor import ELFAuditor, summarize_mitigations
+from firmwarex.core.elf_auditor import ELFAuditor
 from firmwarex.core.normaliser import FindingNormaliser
 from firmwarex.core.secret_scanner import SecretScanner
 from firmwarex.core.unpacker import (
     SafeExtractor,
     SecurityException,
-    UnsupportedFormatException,
     compute_sha256,
     detect_format,
 )
@@ -37,7 +34,13 @@ secret_scanner = SecretScanner()
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
+
+
+@api_router.get("/health")
+async def api_health():
+    """Health check endpoint for API consumers."""
+    return {"status": "healthy"}
 
 
 @api_router.post("/firmware/upload")
@@ -69,11 +72,23 @@ async def upload_firmware(file: UploadFile = File(...)):
                         detail=f"Uploaded file exceeds maximum permitted size ({MAX_UPLOAD_SIZE_BYTES} bytes).",
                     )
                 f.write(chunk)
+
+        # Enforce non-empty upload
+        if bytes_read == 0:
+            upload_path.unlink(missing_ok=True)
+            audit_log.record_event("UPLOAD_REJECTED_EMPTY", {
+                "firmware_id": firmware_id,
+                "filename": filename,
+            })
+            raise HTTPException(
+                status_code=400,
+                detail="Uploaded file is empty (0 bytes).",
+            )
     except HTTPException:
         raise
     except Exception as e:
         upload_path.unlink(missing_ok=True)
-        raise HTTPException(status_code=500, detail=f"Failed to stream upload: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to stream upload: {e!s}")
 
     # 2. Compute digest and detect format
     sha256_digest = compute_sha256(upload_path)
@@ -157,6 +172,19 @@ async def upload_firmware(file: UploadFile = File(...)):
         storage.save_job(job_record)
 
         extraction_result = extractor.extract(upload_path, extract_target)
+        if not extraction_result.success:
+            err_msg = f"Archive extraction failed: {extraction_result.message}" if extraction_result.message else "Corrupted archive file."
+            fw_record["status"] = "extraction_failed"
+            fw_record["error_message"] = err_msg
+            storage.save_firmware(fw_record)
+
+            job_record["status"] = "failed"
+            job_record["stage"] = "extraction_failed"
+            job_record["error_message"] = err_msg
+            job_record["updated_at"] = _utc_now()
+            storage.save_job(job_record)
+            raise HTTPException(status_code=400, detail=err_msg)
+
         fw_record["extraction_dir"] = str(extract_target)
         fw_record["status"] = "extracted"
         storage.save_firmware(fw_record)
@@ -170,7 +198,7 @@ async def upload_firmware(file: UploadFile = File(...)):
         })
 
     except SecurityException as sec_err:
-        err_msg = f"Security Boundary Violation: {str(sec_err)}"
+        err_msg = f"Security Boundary Violation: {sec_err!s}"
         fw_record["status"] = "security_violation"
         fw_record["error_message"] = err_msg
         storage.save_firmware(fw_record)
@@ -187,8 +215,12 @@ async def upload_firmware(file: UploadFile = File(...)):
         })
         raise HTTPException(status_code=400, detail=err_msg)
 
+    except HTTPException:
+        # Re-raise standard HTTPExceptions (such as 400 validation failures) without re-wrapping as 500
+        raise
+
     except Exception as exc:
-        err_msg = f"Extraction failure: {str(exc)}"
+        err_msg = f"Extraction failure: {exc!s}"
         fw_record["status"] = "extraction_failed"
         fw_record["error_message"] = err_msg
         storage.save_firmware(fw_record)
@@ -218,7 +250,7 @@ async def upload_firmware(file: UploadFile = File(...)):
     secret_findings = secret_scanner.scan_directory(extract_target)
 
     # 6. Normalize Findings into PRD Appendix A Schema
-    normalized_findings: List[Dict[str, Any]] = []
+    normalized_findings: list[dict[str, Any]] = []
 
     # Map secret findings
     for sf in secret_findings:
@@ -290,8 +322,6 @@ async def get_binary_audit(firmware_id: str):
         raise HTTPException(status_code=404, detail="Firmware ID not found.")
     audits = storage.get_binary_audits(firmware_id)
     # Reconstruct summary
-    dummy_reports = []
-    # If audits exist in raw form, summarize
     summary = {
         "total_binaries": len(audits),
         "nx_enabled": sum(1 for a in audits if a.get("nx", {}).get("status") == "enabled"),
@@ -312,8 +342,8 @@ async def get_binary_audit(firmware_id: str):
 @api_router.get("/firmware/{firmware_id}/vulnerabilities")
 async def get_vulnerabilities(
     firmware_id: str,
-    category: Optional[str] = Query(None),
-    risk: Optional[str] = Query(None),
+    category: str | None = Query(None),
+    risk: str | None = Query(None),
 ):
     """Retrieve normalized findings conforming to PRD Appendix A."""
     fw = storage.get_firmware(firmware_id)

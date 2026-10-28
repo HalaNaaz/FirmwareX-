@@ -37,3 +37,11 @@ asyncio_mode = "auto"
 source = ["firmwarex"]
 omit = ["tests/*"]
 
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501", "B008"]
+

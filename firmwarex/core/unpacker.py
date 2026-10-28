@@ -7,7 +7,6 @@ import tarfile
 import zipfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
 
 from firmwarex.config import (
     MAX_FILE_COUNT,
@@ -18,12 +17,10 @@ from firmwarex.config import (
 
 class SecurityException(Exception):
     """Raised when an extraction security control or safety boundary is violated."""
-    pass
 
 
 class UnsupportedFormatException(Exception):
     """Raised when an uploaded file format is not supported for safe extraction."""
-    pass
 
 
 @dataclass
@@ -32,11 +29,11 @@ class FileInventoryItem:
     path: str
     type: str
     size: int
-    sha256: Optional[str]
+    sha256: str | None
     is_elf: bool = False
     is_executable: bool = False
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return asdict(self)
 
 
@@ -46,11 +43,11 @@ class ExtractionResult:
     success: bool
     status: str
     message: str
-    extraction_dir: Optional[str] = None
+    extraction_dir: str | None = None
     file_count: int = 0
     total_size_bytes: int = 0
-    inventory: List[FileInventoryItem] = None
-    errors: List[str] = None
+    inventory: list[FileInventoryItem] = None
+    errors: list[str] = None
 
     def __post_init__(self):
         if self.inventory is None:
@@ -58,7 +55,7 @@ class ExtractionResult:
         if self.errors is None:
             self.errors = []
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "success": self.success,
             "status": self.status,
@@ -71,7 +68,7 @@ class ExtractionResult:
         }
 
 
-def detect_format(file_path: Path) -> Tuple[str, bool]:
+def detect_format(file_path: Path) -> tuple[str, bool]:
     """Inspect magic bytes and extension to determine file format and extraction support.
 
     Returns:
@@ -138,7 +135,7 @@ def _is_safe_path(base_dir: Path, target_path: Path) -> bool:
         return False
 
 
-def _classify_file(file_path: Path) -> Tuple[str, bool, bool]:
+def _classify_file(file_path: Path) -> tuple[str, bool, bool]:
     """Classify file type, ELF status, and executable flags."""
     if file_path.is_dir():
         return "directory", False, False
@@ -213,7 +210,7 @@ class SafeExtractor:
         """Extract a ZIP archive enforcing Zip Slip defense and quotas."""
         file_count = 0
         total_size = 0
-        errors: List[str] = []
+        errors: list[str] = []
 
         try:
             with zipfile.ZipFile(zip_path, "r") as zf:
@@ -272,7 +269,7 @@ class SafeExtractor:
             return ExtractionResult(
                 success=False,
                 status="failed",
-                message=f"ZIP extraction failed: {str(e)}",
+                message=f"ZIP extraction failed: {e!s}",
                 extraction_dir=str(output_dir),
                 errors=[str(e)],
             )
@@ -281,7 +278,7 @@ class SafeExtractor:
         """Extract a TAR-family archive enforcing containment and symlink safety."""
         file_count = 0
         total_size = 0
-        errors: List[str] = []
+        errors: list[str] = []
 
         try:
             with tarfile.open(tar_path, "r:*") as tf:
@@ -368,15 +365,15 @@ class SafeExtractor:
             return ExtractionResult(
                 success=False,
                 status="failed",
-                message=f"TAR extraction failed: {str(e)}",
+                message=f"TAR extraction failed: {e!s}",
                 extraction_dir=str(output_dir),
                 errors=[str(e)],
             )
 
     @staticmethod
-    def generate_inventory(root_dir: Path) -> List[FileInventoryItem]:
+    def generate_inventory(root_dir: Path) -> list[FileInventoryItem]:
         """Walk root_dir and build complete file inventory with hashes and types."""
-        inventory: List[FileInventoryItem] = []
+        inventory: list[FileInventoryItem] = []
         resolved_root = root_dir.resolve()
 
         for dirpath, dirnames, filenames in os.walk(resolved_root):

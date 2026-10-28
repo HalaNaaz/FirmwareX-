@@ -13,11 +13,9 @@ Enforces:
 """
 
 import math
-import os
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, Generator, List, Optional, Set, Tuple
 
 from firmwarex.config import MAX_SCAN_FILE_SIZE_BYTES
 from firmwarex.core.redactor import Redactor
@@ -27,7 +25,7 @@ from firmwarex.core.redactor import Redactor
 class SecretFinding:
     """Standardized result for an identified credential, key, or weak cryptographic indicator."""
     file_path: str
-    line_number: Optional[int]
+    line_number: int | None
     category: str  # 'hardcoded_secret' or 'weak_crypto'
     cwe: str       # e.g., 'CWE-798', 'CWE-321', 'CWE-327', 'CWE-328'
     finding_type: str
@@ -39,7 +37,7 @@ class SecretFinding:
     evidence_ref: str
     redacted: bool = True
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return asdict(self)
 
 
@@ -145,7 +143,7 @@ def shannon_entropy(data: str) -> float:
         return 0.0
     entropy = 0.0
     length = len(data)
-    char_counts: Dict[str, int] = {}
+    char_counts: dict[str, int] = {}
     for c in data:
         char_counts[c] = char_counts.get(c, 0) + 1
     for count in char_counts.values():
@@ -160,9 +158,9 @@ class SecretScanner:
     def __init__(self, max_file_size: int = MAX_SCAN_FILE_SIZE_BYTES):
         self.max_file_size = max_file_size
 
-    def scan_directory(self, extraction_dir: Path) -> List[SecretFinding]:
+    def scan_directory(self, extraction_dir: Path) -> list[SecretFinding]:
         """Iterate over all eligible files in extraction_dir and collect findings."""
-        findings: List[SecretFinding] = []
+        findings: list[SecretFinding] = []
         resolved_root = extraction_dir.resolve()
 
         for file_path in resolved_root.rglob("*"):
@@ -182,13 +180,12 @@ class SecretScanner:
 
         return findings
 
-    def scan_file(self, file_path: Path, rel_path: str) -> List[SecretFinding]:
+    def scan_file(self, file_path: Path, rel_path: str) -> list[SecretFinding]:
         """Scan a single file for secrets, crypto anomalies, and high-entropy strings."""
-        findings: List[SecretFinding] = []
+        findings: list[SecretFinding] = []
 
         # Read as text or bounded binary strings
-        is_binary = False
-        lines: List[str] = []
+        lines: list[str] = []
 
         try:
             with open(file_path, "r", encoding="utf-8", errors="replace") as f:

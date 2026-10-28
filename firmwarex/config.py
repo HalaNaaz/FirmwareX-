@@ -12,8 +12,8 @@ REPORTS_DIR = DATA_DIR / "reports"
 AUDIT_LOG_PATH = DATA_DIR / "audit_log.jsonl"
 DB_PATH = DATA_DIR / "firmwarex.db"
 
-# Server configuration
-SERVER_HOST = os.getenv("FIRMWAREX_HOST", "0.0.0.0")
+# Server configuration (Defaults safely to loopback 127.0.0.1)
+SERVER_HOST = os.getenv("FIRMWAREX_HOST", "127.0.0.1")
 SERVER_PORT = int(os.getenv("FIRMWAREX_PORT", "8080"))
 
 # Safety and Quota Limits

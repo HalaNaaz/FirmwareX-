@@ -14,10 +14,9 @@ Uses evidence-based states: 'enabled', 'not_detected', 'unknown', 'not_applicabl
 
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 try:
-    from elftools.elf.dynamic import DynamicSection
     from elftools.elf.elffile import ELFFile
     from elftools.elf.sections import SymbolTableSection
     PYELFTOOLS_AVAILABLE = True
@@ -43,7 +42,7 @@ class MitigationStatus:
     """Security mitigation assessment with explicit evidence status."""
     status: str  # 'enabled', 'not_detected', 'unknown', 'not_applicable'
     evidence: str
-    details: Optional[str] = None
+    details: str | None = None
 
 
 @dataclass
@@ -62,11 +61,11 @@ class BinaryAuditReport:
     relro: MitigationStatus = field(default_factory=lambda: MitigationStatus("unknown", "Not analysed"))
     canary: MitigationStatus = field(default_factory=lambda: MitigationStatus("unknown", "Not analysed"))
     fortify: MitigationStatus = field(default_factory=lambda: MitigationStatus("unknown", "Not analysed"))
-    suspicious_sinks: List[Dict[str, str]] = field(default_factory=list)
-    imported_symbols: List[str] = field(default_factory=list)
-    error_message: Optional[str] = None
+    suspicious_sinks: list[dict[str, str]] = field(default_factory=list)
+    imported_symbols: list[str] = field(default_factory=list)
+    error_message: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "file_path": self.file_path,
             "is_valid_elf": self.is_valid_elf,
@@ -95,7 +94,7 @@ class ELFAuditor:
             # Fallback or warning if pyelftools not found
             pass
 
-    def audit_binary(self, binary_path: Path, relative_display_path: Optional[str] = None) -> BinaryAuditReport:
+    def audit_binary(self, binary_path: Path, relative_display_path: str | None = None) -> BinaryAuditReport:
         """Parse an ELF binary and inspect all security mitigations."""
         disp_path = relative_display_path or str(binary_path)
 
@@ -120,7 +119,7 @@ class ELFAuditor:
             return BinaryAuditReport(
                 file_path=disp_path,
                 is_valid_elf=False,
-                error_message=f"Read error: {str(e)}",
+                error_message=f"Read error: {e!s}",
             )
 
         if not PYELFTOOLS_AVAILABLE:
@@ -134,7 +133,7 @@ class ELFAuditor:
             return BinaryAuditReport(
                 file_path=disp_path,
                 is_valid_elf=True,
-                error_message=f"ELF parsing exception: {str(e)}",
+                error_message=f"ELF parsing exception: {e!s}",
             )
 
     def _parse_with_pyelftools(self, elf: "ELFFile", binary_path: Path, disp_path: str) -> BinaryAuditReport:
@@ -160,68 +159,81 @@ class ELFAuditor:
         else:
             architecture = arch_norm
 
-        # 1. NX (No-Execute) check via PT_GNU_STACK
-        nx_status = MitigationStatus("not_detected", "PT_GNU_STACK segment not present in program headers.")
-        has_gnu_stack = False
-        for segment in elf.iter_segments():
-            if segment.header.p_type == "PT_GNU_STACK":
-                has_gnu_stack = True
-                # Check PF_X (0x1) flag
-                flags = segment.header.p_flags
-                if flags & 0x1:
-                    nx_status = MitigationStatus(
-                        status="not_detected",
-                        evidence="PT_GNU_STACK header has execute flag enabled (PF_X). Stack is executable.",
-                    )
-                else:
-                    nx_status = MitigationStatus(
-                        status="enabled",
-                        evidence="PT_GNU_STACK header present without PF_X flag. Non-executable stack enforced.",
-                    )
-                break
+        # Check if relocatable object (ET_REL) where program headers are not yet linked
+        is_relocatable = (e_type == "ET_REL")
+        dynamic_sec = elf.get_section_by_name(".dynamic")
 
-        if not has_gnu_stack:
-            # Architecture-dependent default: on older MIPS or ARM, lack of PT_GNU_STACK often means executable stack
+        # 1. NX (No-Execute) check via PT_GNU_STACK
+        if is_relocatable:
             nx_status = MitigationStatus(
-                status="not_detected",
-                evidence="PT_GNU_STACK segment absent. Binary defaults to executable stack or kernel policy.",
+                status="not_applicable",
+                evidence="Relocatable object file (ET_REL); stack execution policy determined at final link time.",
             )
+        else:
+            nx_status = MitigationStatus("not_detected", "PT_GNU_STACK segment not present in program headers.")
+            has_gnu_stack = False
+            for segment in elf.iter_segments():
+                if segment.header.p_type == "PT_GNU_STACK":
+                    has_gnu_stack = True
+                    flags = segment.header.p_flags
+                    if flags & 0x1:
+                        nx_status = MitigationStatus(
+                            status="not_detected",
+                            evidence="PT_GNU_STACK header has execute flag enabled (PF_X). Stack is executable.",
+                        )
+                    else:
+                        nx_status = MitigationStatus(
+                            status="enabled",
+                            evidence="PT_GNU_STACK header present without PF_X flag. Non-executable stack enforced.",
+                        )
+                    break
+
+            if not has_gnu_stack:
+                nx_status = MitigationStatus(
+                    status="not_detected",
+                    evidence="PT_GNU_STACK segment absent. Binary defaults to executable stack or kernel policy.",
+                )
 
         # 2. RELRO (Read-Only Relocations)
-        has_gnu_relro = False
-        for segment in elf.iter_segments():
-            if segment.header.p_type == "PT_GNU_RELRO":
-                has_gnu_relro = True
-                break
-
-        has_bind_now = False
-        dynamic_sec = elf.get_section_by_name(".dynamic")
-        if dynamic_sec:
-            for tag in dynamic_sec.iter_tags():
-                if tag.entry.d_tag in ("DT_BIND_NOW", "DF_BIND_NOW"):
-                    has_bind_now = True
-                    break
-                if tag.entry.d_tag == "DT_FLAGS" and (tag.entry.d_val & 0x8):  # DF_BIND_NOW
-                    has_bind_now = True
+        if is_relocatable:
+            relro_status = MitigationStatus(
+                status="not_applicable",
+                evidence="Relocatable object file (ET_REL); relocation hardening applies at final link time.",
+            )
+        else:
+            has_gnu_relro = False
+            for segment in elf.iter_segments():
+                if segment.header.p_type == "PT_GNU_RELRO":
+                    has_gnu_relro = True
                     break
 
-        if has_gnu_relro:
-            if has_bind_now:
-                relro_status = MitigationStatus(
-                    status="enabled",
-                    evidence="Full RELRO enabled (PT_GNU_RELRO and BIND_NOW flags active). GOT is completely read-only.",
-                )
+            has_bind_now = False
+            if dynamic_sec:
+                for tag in dynamic_sec.iter_tags():
+                    if tag.entry.d_tag in ("DT_BIND_NOW", "DF_BIND_NOW"):
+                        has_bind_now = True
+                        break
+                    if tag.entry.d_tag == "DT_FLAGS" and (tag.entry.d_val & 0x8):  # DF_BIND_NOW
+                        has_bind_now = True
+                        break
+
+            if has_gnu_relro:
+                if has_bind_now:
+                    relro_status = MitigationStatus(
+                        status="enabled",
+                        evidence="Full RELRO enabled (PT_GNU_RELRO and BIND_NOW flags active). GOT is completely read-only.",
+                    )
+                else:
+                    relro_status = MitigationStatus(
+                        status="enabled",
+                        evidence="Partial RELRO enabled (PT_GNU_RELRO present, but BIND_NOW is absent).",
+                        details="partial_relro",
+                    )
             else:
                 relro_status = MitigationStatus(
-                    status="enabled",
-                    evidence="Partial RELRO enabled (PT_GNU_RELRO present, but BIND_NOW is absent).",
-                    details="partial_relro",
+                    status="not_detected",
+                    evidence="No PT_GNU_RELRO segment found. Global Offset Table is fully writable.",
                 )
-        else:
-            relro_status = MitigationStatus(
-                status="not_detected",
-                evidence="No PT_GNU_RELRO segment found. Global Offset Table is fully writable.",
-            )
 
         # 3. PIE (Position Independent Executable) / ASLR
         if e_type == "ET_DYN":
@@ -260,7 +272,7 @@ class ELFAuditor:
             )
 
         # 4. Check Symbols (Canary, FORTIFY, Imports)
-        all_symbols: Set[str] = set()
+        all_symbols: set[str] = set()
         is_stripped = True
         is_static = dynamic_sec is None
 
@@ -303,7 +315,7 @@ class ELFAuditor:
             )
 
         # 7. Suspicious Sinks (Review Leads)
-        suspicious_sinks: List[Dict[str, str]] = []
+        suspicious_sinks: list[dict[str, str]] = []
         for symbol in sorted(all_symbols):
             clean_sym = symbol.strip()
             # Handle versioned symbols e.g. strcpy@GLIBC_2.0
@@ -343,7 +355,7 @@ class ELFAuditor:
         bitness = 32 if data[4] == 1 else (64 if data[4] == 2 else 0)
         is_little = data[5] == 1
         endianness = "little" if is_little else ("big" if data[5] == 2 else "unknown")
-        
+
         # Read e_machine (bytes 18-19)
         e_machine = 0
         if len(data) >= 20:
@@ -369,9 +381,9 @@ class ELFAuditor:
             fortify=MitigationStatus("unknown", "pyelftools library not installed."),
         )
 
-    def audit_all_in_directory(self, extraction_dir: Path) -> List[BinaryAuditReport]:
+    def audit_all_in_directory(self, extraction_dir: Path) -> list[BinaryAuditReport]:
         """Discover and audit all ELF binaries inside extraction_dir."""
-        results: List[BinaryAuditReport] = []
+        results: list[BinaryAuditReport] = []
         resolved_root = extraction_dir.resolve()
 
         for path in resolved_root.rglob("*"):
@@ -391,7 +403,7 @@ class ELFAuditor:
         return results
 
 
-def summarize_mitigations(reports: List[BinaryAuditReport]) -> Dict[str, Any]:
+def summarize_mitigations(reports: list[BinaryAuditReport]) -> dict[str, Any]:
     """Compute aggregate counts and percentage metrics across audited binaries."""
     total = len(reports)
     if total == 0:

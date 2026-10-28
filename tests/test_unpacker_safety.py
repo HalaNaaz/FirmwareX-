@@ -3,7 +3,6 @@
 import io
 import tarfile
 import zipfile
-from pathlib import Path
 
 import pytest
 
@@ -11,7 +10,6 @@ from firmwarex.core.unpacker import (
     SafeExtractor,
     SecurityException,
     UnsupportedFormatException,
-    compute_sha256,
     detect_format,
 )
 from tests.fixtures_helper import create_benign_firmware_archive

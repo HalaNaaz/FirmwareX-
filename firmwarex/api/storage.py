@@ -3,7 +3,7 @@
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from firmwarex.config import DB_PATH, ensure_directories
 
@@ -112,7 +112,7 @@ class StorageManager:
             """)
             conn.commit()
 
-    def save_firmware(self, fw_data: Dict[str, Any]):
+    def save_firmware(self, fw_data: dict[str, Any]):
         conn = self._get_connection()
         try:
             with conn:
@@ -135,7 +135,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def get_firmware(self, firmware_id: str) -> Optional[Dict[str, Any]]:
+    def get_firmware(self, firmware_id: str) -> dict[str, Any] | None:
         conn = self._get_connection()
         try:
             row = conn.execute("SELECT * FROM firmware WHERE id = ?", (firmware_id,)).fetchone()
@@ -143,7 +143,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def list_firmwares(self) -> List[Dict[str, Any]]:
+    def list_firmwares(self) -> list[dict[str, Any]]:
         conn = self._get_connection()
         try:
             rows = conn.execute("SELECT * FROM firmware ORDER BY created_at DESC").fetchall()
@@ -151,7 +151,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def save_job(self, job_data: Dict[str, Any]):
+    def save_job(self, job_data: dict[str, Any]):
         conn = self._get_connection()
         try:
             with conn:
@@ -172,7 +172,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def get_job(self, job_id: str) -> Optional[Dict[str, Any]]:
+    def get_job(self, job_id: str) -> dict[str, Any] | None:
         conn = self._get_connection()
         try:
             row = conn.execute("SELECT * FROM jobs WHERE job_id = ?", (job_id,)).fetchone()
@@ -180,7 +180,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def save_inventory(self, firmware_id: str, items: List[Any]):
+    def save_inventory(self, firmware_id: str, items: list[Any]):
         conn = self._get_connection()
         try:
             with conn:
@@ -202,7 +202,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def get_inventory(self, firmware_id: str) -> List[Dict[str, Any]]:
+    def get_inventory(self, firmware_id: str) -> list[dict[str, Any]]:
         conn = self._get_connection()
         try:
             rows = conn.execute("SELECT * FROM inventory WHERE firmware_id = ? ORDER BY path ASC", (firmware_id,)).fetchall()
@@ -210,7 +210,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def save_binary_audits(self, firmware_id: str, audits: List[Any]):
+    def save_binary_audits(self, firmware_id: str, audits: list[Any]):
         conn = self._get_connection()
         try:
             with conn:
@@ -239,7 +239,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def get_binary_audits(self, firmware_id: str) -> List[Dict[str, Any]]:
+    def get_binary_audits(self, firmware_id: str) -> list[dict[str, Any]]:
         conn = self._get_connection()
         try:
             rows = conn.execute("SELECT * FROM binary_audits WHERE firmware_id = ? ORDER BY file_path ASC", (firmware_id,)).fetchall()
@@ -247,7 +247,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def save_findings(self, firmware_id: str, findings: List[Dict[str, Any]]):
+    def save_findings(self, firmware_id: str, findings: list[dict[str, Any]]):
         conn = self._get_connection()
         try:
             with conn:
@@ -276,7 +276,7 @@ class StorageManager:
         finally:
             conn.close()
 
-    def get_findings(self, firmware_id: str) -> List[Dict[str, Any]]:
+    def get_findings(self, firmware_id: str) -> list[dict[str, Any]]:
         conn = self._get_connection()
         try:
             rows = conn.execute("SELECT * FROM findings WHERE firmware_id = ? ORDER BY risk_rating DESC", (firmware_id,)).fetchall()

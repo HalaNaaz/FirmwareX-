@@ -21,13 +21,14 @@ Activate the project-local virtual environment:
 ```powershell
 # Windows PowerShell
 .\.venv\Scripts\Activate.ps1
-# Or invoke Python directly
-.\.venv\Scripts\python.exe -m uvicorn firmwarex.api.server:app --host 0.0.0.0 --port 8080 --reload
+# Or invoke Python directly (bound safely to loopback 127.0.0.1)
+.\.venv\Scripts\python.exe -m uvicorn firmwarex.api.server:app --host 127.0.0.1 --port 8080 --reload
 ```
 
 Open your browser at:
-* **Interactive Dashboard:** [http://localhost:8080/](http://localhost:8080/)
-* **Interactive API Documentation (Swagger):** [http://localhost:8080/docs](http://localhost:8080/docs)
+* **Interactive Dashboard:** [http://127.0.0.1:8080/](http://127.0.0.1:8080/)
+* **Interactive API Documentation (Swagger):** [http://127.0.0.1:8080/docs](http://127.0.0.1:8080/docs)
+* **Health Check Endpoints:** [http://127.0.0.1:8080/healthz](http://127.0.0.1:8080/healthz) and [http://127.0.0.1:8080/health](http://127.0.0.1:8080/health)
 
 ---
 
@@ -74,16 +75,32 @@ Run all automated unit, integration, and security tests with coverage measuremen
 .\.venv\Scripts\python.exe -m pytest -v --cov=firmwarex
 ```
 
-### Verified Test Suite Breakdown (22 Tests Total):
+### Verified Test Suite Breakdown (31 Tests Total — 84% Coverage):
 * **Security & Containment:** Zip Slip path traversal rejection, TAR traversal rejection, symlink escape rejection, FIFO/special device node blocking, file count quotas, uncompressed size ceilings.
-* **ELF Hardening Audit:** NX/DEP detection (`PT_GNU_STACK`), RELRO detection (`PT_GNU_RELRO` & `BIND_NOW`), PIE detection (`ET_DYN` vs `ET_EXEC`), MIPS big-endian parsing, ARM little-endian parsing, x86_64 parsing, non-ELF graceful handling.
-* **Secret & Crypto Redaction:** AWS key masking, Shannon entropy calculations ($H > 4.5$), password assignment detection, shadow database matching, zero plaintext persistence.
-* **Schema Compliance:** Strict PRD Appendix A field structure and null safety verification.
-* **API & Dashboard:** End-to-end ingestion pipeline, report retrieval, unsupported format error reporting, HTML5 dashboard rendering.
+* **Input Validation & Error Handling:** 0-byte upload rejection (HTTP 400), oversized upload rejection (HTTP 413), corrupted archive handling (HTTP 400), unsupported format detection (HTTP 422), non-existent resource handling (HTTP 404).
+* **ELF Hardening Audit:** NX/DEP detection (`PT_GNU_STACK`), Full & Partial RELRO detection (`PT_GNU_RELRO` & `BIND_NOW`), PIE detection (`ET_DYN` vs `ET_EXEC`), MIPS big-endian, ARM little-endian, ARM64/AArch64, x86_64, relocatable object files (`ET_REL` with `not_applicable`), truncated/corrupted ELF headers, and non-ELF graceful handling.
+* **Secret & Crypto Redaction:** AWS key masking, Shannon entropy calculations ($H > 4.5$), password assignment detection, shadow database matching, zero plaintext persistence in database or exports.
+* **Schema Compliance:** Strict PRD Appendix A field structure, CWE mapping, and null safety verification.
+* **API, Persistence & Dashboard:** End-to-end ingestion pipeline, report retrieval, SQLite transactions, append-only audit logging (`audit_log.jsonl`), HTML5 dashboard rendering.
 
 ---
 
-## 5. Teardown & Clean Up
+## 5. Automated Browser QA & Viewport Verification
+
+Run the automated headless Chrome testing suite:
+```powershell
+.\.venv\Scripts\python.exe tests/browser_qa_runner.py
+```
+This suite verifies:
+1. Server launch on loopback `127.0.0.1:8080`.
+2. Live DOM elements, table bodies, and branding rendered in headless Chrome.
+3. Desktop layout screenshot captured at 1280x800 (`docs/dashboard_desktop.png`).
+4. Mobile layout screenshot captured at 375x812 (`docs/dashboard_mobile.png`).
+5. Live end-to-end multipart firmware archive upload and report export.
+
+---
+
+## 6. Teardown & Clean Up
 
 To delete transient uploaded firmware, extracted files, and test artifacts:
 ```powershell

@@ -1,7 +1,5 @@
 """Unit tests for ELF parser, architecture detection, and hardening mitigation matrix."""
 
-import pytest
-from pathlib import Path
 
 from firmwarex.core.elf_auditor import ELFAuditor, summarize_mitigations
 from tests.fixtures_helper import create_minimal_elf
@@ -105,4 +103,59 @@ def test_summarize_mitigations(tmp_path):
     assert summary["total_binaries"] == 2
     assert summary["nx_enabled"] == 1
     assert summary["nx_percentage"] == 50.0
+
+
+def test_elf_arm64_architecture(tmp_path):
+    """Test ARM64 (AArch64) ELF binary parsing."""
+    elf_data = create_minimal_elf(arch="arm64", bitness=64, endianness="little")
+    elf_file = tmp_path / "test_arm64.elf"
+    elf_file.write_bytes(elf_data)
+
+    auditor = ELFAuditor()
+    report = auditor.audit_binary(elf_file)
+
+    assert report.is_valid_elf is True
+    assert report.architecture == "ARM64"
+    assert report.bitness == 64
+
+
+def test_elf_relocatable_object_mitigations(tmp_path):
+    """Test ET_REL relocatable object file where mitigations are not_applicable."""
+    elf_data = create_minimal_elf(arch="x86_64", bitness=64, is_relocatable=True)
+    elf_file = tmp_path / "test_reloc.o"
+    elf_file.write_bytes(elf_data)
+
+    auditor = ELFAuditor()
+    report = auditor.audit_binary(elf_file)
+
+    assert report.is_valid_elf is True
+    assert report.elf_type == "ET_REL"
+    assert report.nx.status == "not_applicable"
+    assert report.pie.status == "not_applicable"
+    assert report.relro.status == "not_applicable"
+
+
+def test_elf_unknown_architecture(tmp_path):
+    """Test handling of an ELF with an unrecognized e_machine ID."""
+    elf_data = create_minimal_elf(custom_machine=999)
+    elf_file = tmp_path / "test_unknown_arch.elf"
+    elf_file.write_bytes(elf_data)
+
+    auditor = ELFAuditor()
+    report = auditor.audit_binary(elf_file)
+
+    assert report.is_valid_elf is True
+    assert "999" in report.architecture or "unknown" in report.architecture.lower()
+
+
+def test_elf_corrupted_truncated_header(tmp_path):
+    """Test handling of truncated ELF header without crashing."""
+    corrupted_elf = tmp_path / "truncated.elf"
+    corrupted_elf.write_bytes(b"\x7fELF\x02\x01\x01\x00")  # Truncated after 8 bytes
+
+    auditor = ELFAuditor()
+    report = auditor.audit_binary(corrupted_elf)
+
+    assert report.is_valid_elf is True
+    assert report.error_message is not None or report.nx.status == "unknown"
 

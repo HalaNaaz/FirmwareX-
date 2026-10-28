@@ -1,8 +1,8 @@
 """Finding normalization engine conforming to PRD Appendix A schema and CWE mapping."""
 
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from firmwarex.core.elf_auditor import BinaryAuditReport
 from firmwarex.core.secret_scanner import SecretFinding
@@ -10,14 +10,14 @@ from firmwarex.core.secret_scanner import SecretFinding
 
 def current_rfc3339_utc() -> str:
     """Generate an ISO-8601 / RFC3339 UTC timestamp."""
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 class FindingNormaliser:
     """Transforms raw audit results and scanner outputs into validated Appendix A findings."""
 
     @staticmethod
-    def from_secret_finding(finding: SecretFinding, firmware_id: str) -> Dict[str, Any]:
+    def from_secret_finding(finding: SecretFinding, firmware_id: str) -> dict[str, Any]:
         """Convert a SecretFinding into an Appendix A compliant dictionary."""
         return {
             "vulnerability_id": str(uuid.uuid4()),
@@ -50,9 +50,9 @@ class FindingNormaliser:
         }
 
     @staticmethod
-    def from_binary_mitigations(audit: BinaryAuditReport, firmware_id: str) -> List[Dict[str, Any]]:
+    def from_binary_mitigations(audit: BinaryAuditReport, firmware_id: str) -> list[dict[str, Any]]:
         """Generate findings for missing binary mitigations and suspicious imported sinks."""
-        findings: List[Dict[str, Any]] = []
+        findings: list[dict[str, Any]] = []
 
         # 1. Missing NX check
         if audit.nx.status == "not_detected":
@@ -75,7 +75,7 @@ class FindingNormaliser:
                 },
                 "risk_rating": "medium",
                 "confidence": "probable",
-                "evidence_ref": f"elf:pt_gnu_stack_missing_or_executable",
+                "evidence_ref": "elf:pt_gnu_stack_missing_or_executable",
                 "redacted": False,
                 "status": "new",
                 "detected_at": current_rfc3339_utc(),

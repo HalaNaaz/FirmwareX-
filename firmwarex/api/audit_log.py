@@ -1,9 +1,9 @@
 """Append-only immutable audit log for FirmwareX job execution and safety tracking."""
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from firmwarex.config import AUDIT_LOG_PATH, ensure_directories
 
@@ -15,10 +15,10 @@ class AuditLogger:
         self.log_path = log_path
         ensure_directories()
 
-    def record_event(self, event_type: str, details: Dict[str, Any]):
+    def record_event(self, event_type: str, details: dict[str, Any]):
         """Write an append-only JSON event record to disk."""
         record = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "event_type": event_type,
             "details": details,
         }

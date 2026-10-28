@@ -1,8 +1,6 @@
 """Cryptographic redactor and fingerprinting engine for sensitive data protection."""
 
 import hashlib
-import re
-from typing import Optional, Tuple
 
 
 class Redactor:

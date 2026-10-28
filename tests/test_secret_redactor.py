@@ -1,11 +1,9 @@
 """Unit tests for secret scanning, Shannon entropy, redaction engine, and schema compliance."""
 
-from pathlib import Path
-import pytest
 
+from firmwarex.core.normaliser import FindingNormaliser
 from firmwarex.core.redactor import Redactor
 from firmwarex.core.secret_scanner import SecretScanner, shannon_entropy
-from firmwarex.core.normaliser import FindingNormaliser
 
 
 def test_redactor_masking():
@@ -41,7 +39,7 @@ def test_secret_scanner_detection(tmp_path):
     config_file = tmp_path / "app_config.conf"
     raw_secret = "AKIAIOSFODNN7EXAMPLE"
     raw_pwd = "SuperSecretAdminPassword123"
-    
+
     config_file.write_text(f"""
     # Embedded system configuration
     aws_key = "{raw_secret}"
@@ -72,10 +70,10 @@ def test_normaliser_appendix_a_compliance(tmp_path):
     scanner = SecretScanner()
     test_file = tmp_path / "shadow"
     test_file.write_text("root:$6$salt$encryptedhashvaluehere12345678901234567890:19000:0:99999:7:::\n")
-    
+
     findings = scanner.scan_file(test_file, "etc/shadow")
     assert len(findings) > 0
-    
+
     norm = FindingNormaliser.from_secret_finding(findings[0], firmware_id="fw-test-uuid-1234")
 
     # Check required Appendix A schema keys
