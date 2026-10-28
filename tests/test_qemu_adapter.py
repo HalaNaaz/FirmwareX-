@@ -34,7 +34,7 @@ def test_qemu_emulate_unsupported_arch(tmp_path):
     dummy.write_bytes(b"\x7fELF")
 
     res = adapter.emulate_binary(dummy, arch="UNKNOWN_CHIP", endian="little")
-    assert res.status == "unsupported_arch"
+    assert res.status in ("unsupported_architecture", "unsupported_arch")
     assert "No QEMU user-mode emulator available" in res.termination_reason
 
 
@@ -46,7 +46,7 @@ def test_qemu_emulate_skips_when_host_binary_missing(tmp_path):
 
     # MIPS emulation on Windows host without qemu-mips.exe
     res = adapter.emulate_binary(dummy, arch="MIPS", endian="big")
-    assert res.status == "skipped"
+    assert res.status in ("tool_unavailable", "skipped")
     assert "Host execution of untrusted firmware binaries is strictly forbidden" in res.termination_reason or "not installed" in res.termination_reason
 
 

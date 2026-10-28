@@ -176,3 +176,37 @@ def test_database_persistence():
         assert "sha256" in fw
         assert "status" in fw
 
+
+
+def test_upload_and_extraction_cramfs_firmware(tmp_path):
+    """Verify that a CramFS firmware image uploads, extracts, audits files, and completes analysis."""
+    from tests.fixtures_extractors import create_synthetic_cramfs
+    from tests.fixtures_helper import create_minimal_elf
+
+    elf_bytes = create_minimal_elf("mips", bitness=32, endianness="big")
+    cramfs_img = tmp_path / "firmware.cramfs"
+    create_synthetic_cramfs(
+        cramfs_img,
+        files={
+            "bin_service": elf_bytes,
+            "etc_shadow": b"root:$6$salt:19000:0:99999:7:::\n",
+        },
+    )
+
+    with open(cramfs_img, "rb") as f:
+        resp = client.post(
+            "/api/v1/firmware/upload",
+            files={"file": ("firmware.cramfs", f, "application/octet-stream")},
+        )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "completed"
+    assert data["file_count"] >= 2
+    fw_id = data["firmware_id"]
+
+    # Verify filesystem route
+    fs_resp = client.get(f"/api/v1/firmware/{fw_id}/filesystem")
+    assert fs_resp.status_code == 200
+    files = [item["path"] for item in fs_resp.json()["files"]]
+    assert any("etc_shadow" in p for p in files)

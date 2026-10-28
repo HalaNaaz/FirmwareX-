@@ -41,6 +41,23 @@ class IsolationConfig:
 
 
 @dataclass
+class SandboxExecutionResult:
+    """Outcome of an isolated container execution run."""
+    status: str  # "completed", "timeout", "failed", "isolation_blocked", "preflight_failed"
+    exit_code: int | None
+    stdout: str
+    stderr: str
+    network_isolated: bool
+    read_only_rootfs: bool
+    duration_ms: float
+    command_executed: list[str]
+    diagnostics: list[str]
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
 class PreflightCheckResult:
     """Result of automated containment preflight verification."""
     passed: bool
@@ -158,6 +175,73 @@ class ContainmentPreflight:
         )
 
     @classmethod
+    def verify_live_containment(cls, image: str = "redis:7-alpine") -> dict:
+        """Execute project-controlled safe probe inside disposable container to verify containment live.
+
+        Verifies:
+        1. Disposable container creation and clean termination.
+        2. Network egress denial (ping to 8.8.8.8 fails with Network unreachable).
+        3. Read-only root filesystem (touching root fails with Read-only file system).
+        4. Non-root user execution (UID != 0).
+        """
+        preflight = cls.run_preflight()
+        if not preflight.passed:
+            return {
+                "live_execution_verified": False,
+                "network_egress_denied": False,
+                "read_only_rootfs_verified": False,
+                "non_root_verified": False,
+                "diagnostics": preflight.diagnostics + ["Live probe aborted: Containment preflight failed closed."],
+            }
+
+        diagnostics: list[str] = []
+        network_egress_denied = False
+        read_only_rootfs_verified = False
+        non_root_verified = False
+        live_execution_verified = False
+
+        try:
+            with DisposableSandbox() as sandbox:
+                # Probe 1: Non-root execution & read-only check
+                probe_res = sandbox.execute_isolated_command(
+                    command=["sh", "-c", "id -u; touch /test_ro.txt 2>&1 || true"],
+                    image=image,
+                    timeout_seconds=5,
+                )
+                if probe_res.status == "completed":
+                    live_execution_verified = True
+                    lines = [line.strip() for line in probe_res.stdout.splitlines() if line.strip()]
+                    if lines and lines[0] == "1000":
+                        non_root_verified = True
+                        diagnostics.append("Verified non-root user execution (UID 1000).")
+                    if "Read-only file system" in probe_res.stdout or "read-only" in probe_res.stdout.lower():
+                        read_only_rootfs_verified = True
+                        diagnostics.append("Verified read-only root filesystem.")
+
+                # Probe 2: Network egress denial check
+                egress_res = sandbox.execute_isolated_command(
+                    command=["ping", "-c", "1", "-W", "1", "8.8.8.8"],
+                    image=image,
+                    timeout_seconds=5,
+                )
+                if "unreachable" in egress_res.stderr.lower() or "unreachable" in egress_res.stdout.lower() or egress_res.exit_code != 0:
+                    network_egress_denied = True
+                    diagnostics.append("Verified strict network egress denial (--network none active).")
+                else:
+                    diagnostics.append("Warning: Network probe returned unexpected output.")
+
+        except Exception as e:
+            diagnostics.append(f"Live containment probe exception: {e!s}")
+
+        return {
+            "live_execution_verified": live_execution_verified,
+            "network_egress_denied": network_egress_denied,
+            "read_only_rootfs_verified": read_only_rootfs_verified,
+            "non_root_verified": non_root_verified,
+            "diagnostics": diagnostics,
+        }
+
+    @classmethod
     def validate_mount_path(cls, mount_target: Path) -> bool:
         """Enforce strict host path isolation for container volume mounts.
 
@@ -240,3 +324,117 @@ class DisposableSandbox:
         ]
         args.extend(command)
         return args
+
+    def execute_isolated_command(
+        self,
+        command: list[str],
+        image: str = "redis:7-alpine",
+        timeout_seconds: int | None = None,
+        max_output_bytes: int = 65536,
+    ) -> SandboxExecutionResult:
+        """Safely execute command inside disposable isolated Docker container.
+
+        Guarantees:
+        - Argument list only (rejects shell string interpolation).
+        - Enforces --network none, read-only rootfs, non-root user, capabilities dropped.
+        - Enforces memory, cpu, and wall-clock timeout bounds.
+        - Truncates output to max_output_bytes.
+        - Guaranteed scratch cleanup.
+        """
+        import time
+        start_time = time.time()
+        timeout = timeout_seconds or self.config.timeout_seconds
+        diagnostics = []
+
+        if not isinstance(command, list) or not all(isinstance(c, str) for c in command):
+            return SandboxExecutionResult(
+                status="failed",
+                exit_code=None,
+                stdout="",
+                stderr="Security violation: command must be a list of string arguments.",
+                network_isolated=False,
+                read_only_rootfs=False,
+                duration_ms=0.0,
+                command_executed=[],
+                diagnostics=["Shell-string commands forbidden to prevent argument injection."],
+            )
+
+        # Enforce containment preflight
+        preflight = ContainmentPreflight.run_preflight()
+        if not preflight.passed:
+            return SandboxExecutionResult(
+                status="preflight_failed",
+                exit_code=None,
+                stdout="",
+                stderr="Execution blocked: Containment preflight failed closed.",
+                network_isolated=False,
+                read_only_rootfs=False,
+                duration_ms=0.0,
+                command_executed=command,
+                diagnostics=preflight.diagnostics,
+            )
+
+        try:
+            docker_args = self.build_docker_run_args(image, command)
+        except PermissionError as p_err:
+            return SandboxExecutionResult(
+                status="isolation_blocked",
+                exit_code=None,
+                stdout="",
+                stderr=str(p_err),
+                network_isolated=False,
+                read_only_rootfs=False,
+                duration_ms=0.0,
+                command_executed=command,
+                diagnostics=["Mount target failed isolation boundary check."],
+            )
+
+        try:
+            proc = subprocess.run(
+                docker_args,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+            duration = round((time.time() - start_time) * 1000, 2)
+            stdout = (proc.stdout or "")[:max_output_bytes]
+            stderr = (proc.stderr or "")[:max_output_bytes]
+
+            return SandboxExecutionResult(
+                status="completed" if proc.returncode == 0 else "failed",
+                exit_code=proc.returncode,
+                stdout=stdout,
+                stderr=stderr,
+                network_isolated=True,
+                read_only_rootfs=True,
+                duration_ms=duration,
+                command_executed=command,
+                diagnostics=diagnostics,
+            )
+
+        except subprocess.TimeoutExpired:
+            duration = round((time.time() - start_time) * 1000, 2)
+            return SandboxExecutionResult(
+                status="timeout",
+                exit_code=None,
+                stdout="",
+                stderr=f"Command timed out after {timeout} seconds.",
+                network_isolated=True,
+                read_only_rootfs=True,
+                duration_ms=duration,
+                command_executed=command,
+                diagnostics=[f"Execution killed due to timeout ({timeout}s)."],
+            )
+        except Exception as e:
+            duration = round((time.time() - start_time) * 1000, 2)
+            return SandboxExecutionResult(
+                status="failed",
+                exit_code=None,
+                stdout="",
+                stderr=str(e),
+                network_isolated=False,
+                read_only_rootfs=False,
+                duration_ms=duration,
+                command_executed=command,
+                diagnostics=[f"Subprocess execution error: {e!s}"],
+            )

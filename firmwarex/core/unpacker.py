@@ -108,6 +108,9 @@ def detect_format_detailed(file_path: Path) -> tuple[str, bool, list[DetectedSig
             return "bzip2_tar", True, signatures
         if fmt_id == "xz" and any(file_name.endswith(ext) for ext in [".tar.xz", ".txz"]):
             return "xz_tar", True, signatures
+        # CramFS, TRX, and uImage are supported by modular extractors in Phase 4
+        if fmt_id in ("cramfs", "trx", "uimage"):
+            return fmt_id, True, signatures
         return fmt_id, is_supported, signatures
 
     # Fallback to file extension checks for archives
@@ -231,6 +234,38 @@ class SafeExtractor:
                 result = self._extract_zip(archive_path, resolved_out, nesting_level=0, parent="root")
             elif fmt in ("tar", "gzip_tar", "bzip2_tar", "xz_tar", "gzip", "bzip2", "xz"):
                 result = self._extract_tar(archive_path, resolved_out, nesting_level=0, parent="root")
+            elif fmt in ("cramfs", "trx", "uimage"):
+                from firmwarex.core.extractors.base import ExtractionStatus, SecurityViolationError
+                from firmwarex.core.extractors.registry import ExtractorRegistry
+                try:
+                    outcome = ExtractorRegistry().extract_firmware(
+                        archive_path,
+                        resolved_out,
+                        max_file_count=self.max_file_count,
+                        max_uncompressed_size=self.max_uncompressed_size,
+                    )
+                    if not outcome.success:
+                        if outcome.status == ExtractionStatus.UNSUPPORTED:
+                            raise UnsupportedFormatException("; ".join(outcome.errors or outcome.diagnostics))
+                        return ExtractionResult(
+                            success=False,
+                            status=outcome.status.value,
+                            message="; ".join(outcome.errors) or "Extraction failed.",
+                            extraction_dir=str(output_dir),
+                            errors=outcome.errors,
+                            detected_signatures=sig_dicts,
+                        )
+                    result = ExtractionResult(
+                        success=True,
+                        status="extracted",
+                        message=f"Successfully extracted {outcome.file_count} items via {outcome.tool_name}.",
+                        extraction_dir=str(output_dir),
+                        file_count=outcome.file_count,
+                        total_size_bytes=outcome.total_size_bytes,
+                        errors=outcome.errors,
+                    )
+                except SecurityViolationError as sve:
+                    raise SecurityException(str(sve))
             else:
                 raise UnsupportedFormatException(f"No extraction handler available for '{fmt}'.")
 

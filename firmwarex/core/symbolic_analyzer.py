@@ -1,4 +1,4 @@
-"""Bounded symbolic execution and static taint reachability analysis prototype.
+"""Bounded symbolic execution and static taint reachability analysis engine.
 
 Inspects ELF binaries for potential data-flow paths connecting untrusted input
 sources (e.g., recv, read, getenv, argv) to dangerous sinks (e.g., system, popen,
@@ -7,13 +7,13 @@ strcpy, sprintf).
 Safety & Truthfulness Guarantees:
 1. Labels all heuristic findings strictly as "REVIEW_LEAD", never confirmed vulnerabilities.
 2. Enforces explicit instruction, depth, time, and path budgets.
-3. Detects angr availability; if absent (e.g., on Python 3.14 Windows without binary wheels),
-   falls back to deterministic static symbol-flow reachability analysis and documents the limitation.
+3. Detects angr availability; on Python 3.14 Windows without binary wheels,
+   falls back honestly to deterministic static symbol-flow reachability analysis and documents the limitation.
 4. Never fabricates symbolic execution traces, SAT solver solutions, or crash states.
 """
 
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 # Verify whether angr engine is available in current Python environment
@@ -60,6 +60,9 @@ class SymbolicReviewLead:
     category: str
     evidence: str
     status: str = "REVIEW_LEAD"  # Must never be claimed as a confirmed exploit
+    confidence: str = "candidate"  # "candidate" or "low" for heuristic reachability
+    analysis_method: str = "static_symbol_reachability"
+    limitations: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -125,6 +128,7 @@ class BoundedSymbolicAnalyzer:
             with open(binary_path, "rb") as f:
                 elf = ELFFile(f)
                 symbols_present: set[str] = set()
+                symbol_sections: dict[str, str] = {}
 
                 for sec_name in [".dynsym", ".symtab"]:
                     sec = elf.get_section_by_name(sec_name)
@@ -132,6 +136,7 @@ class BoundedSymbolicAnalyzer:
                         for sym in sec.iter_symbols():
                             if sym.name:
                                 symbols_present.add(sym.name)
+                                symbol_sections[sym.name] = sec_name
 
                 # Check relocations
                 for sec in elf.iter_sections():
@@ -143,6 +148,7 @@ class BoundedSymbolicAnalyzer:
                                     sym = sym_tab.get_symbol(rel["r_info_sym"])
                                     if sym and sym.name:
                                         symbols_present.add(sym.name)
+                                        symbol_sections[sym.name] = sec.name
                         except Exception:
                             pass
 
@@ -150,11 +156,20 @@ class BoundedSymbolicAnalyzer:
                 found_sources = symbols_present.intersection(INPUT_SOURCES)
                 found_sinks = symbols_present.intersection(set(DANGEROUS_SINKS.keys()))
 
-                # If both a source and a sink exist, generate an audited REVIEW_LEAD
+                # If both a source and a sink exist, generate deduplicated REVIEW_LEADs
+                seen_pairs: set[tuple[str, str]] = set()
                 if found_sources and found_sinks:
                     for src in sorted(found_sources):
                         for snk in sorted(found_sinks):
+                            pair = (src, snk)
+                            if pair in seen_pairs:
+                                continue
+                            seen_pairs.add(pair)
+
                             cwe_id, category = DANGEROUS_SINKS[snk]
+                            src_sec = symbol_sections.get(src, "reloc")
+                            snk_sec = symbol_sections.get(snk, "reloc")
+
                             leads.append(
                                 SymbolicReviewLead(
                                     binary_path=binary_path.name,
@@ -163,10 +178,16 @@ class BoundedSymbolicAnalyzer:
                                     cwe_id=cwe_id,
                                     category=category,
                                     evidence=(
-                                        f"Static call-graph reachability lead: Binary imports untrusted input source "
-                                        f"'{src}' and references dangerous sink '{snk}'. Analyst verification required."
+                                        f"Static call-graph reachability lead: Binary imports input source '{src}' ({src_sec}) "
+                                        f"and references dangerous sink '{snk}' ({snk_sec}). Requires manual analyst triage."
                                     ),
                                     status="REVIEW_LEAD",
+                                    confidence="candidate",
+                                    analysis_method="static_symbol_reachability",
+                                    limitations=[
+                                        "Call-graph co-occurrence only; does not prove actual input-to-sink runtime data flow.",
+                                        "Symbolic constraint solver execution is not active on this binary.",
+                                    ],
                                 )
                             )
 
@@ -184,7 +205,7 @@ class BoundedSymbolicAnalyzer:
 
         if not ANGR_AVAILABLE:
             limitations.append(
-                "angr symbolic execution engine is not installed in the Python 3.14 Windows environment. "
+                "angr symbolic execution engine is not available on Python 3.14 Windows (missing precompiled PyPI wheels). "
                 "Analysis operated via FirmwareX Static Taint & Reachability Engine v1.0. "
                 "All findings represent candidate review leads, not verified symbolic SAT proofs."
             )

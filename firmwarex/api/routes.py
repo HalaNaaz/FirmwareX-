@@ -461,3 +461,48 @@ async def get_job_status(job_id: str):
         raise HTTPException(status_code=404, detail="Job ID not found.")
     return job
 
+
+
+@api_router.get("/extractors/capabilities")
+async def get_extractor_capabilities():
+    """Retrieve registered modular firmware filesystem and container extractor capabilities."""
+    from firmwarex.core.extractors.registry import ExtractorRegistry
+    return {
+        "capabilities": ExtractorRegistry().list_capabilities()
+    }
+
+
+@api_router.get("/containment/verify")
+async def get_live_containment_verification():
+    """Execute a project-controlled safe probe inside disposable container to verify live containment."""
+    return ContainmentPreflight.verify_live_containment()
+
+
+@api_router.post("/fuzzing/test")
+async def run_protocol_fuzzing_test(
+    protocol: str = Query("http", pattern="^(http|upnp|mqtt)$"),
+    iterations: int = Query(20, ge=1, le=100),
+    seed: int = Query(42),
+):
+    """Execute bounded defensive protocol fuzzing test against an isolated loopback test service."""
+    from firmwarex.fuzzing.protocol_fuzzer import FuzzConfig, FuzzProtocol, ProtocolFuzzRunner
+    from firmwarex.fuzzing.test_server import SyntheticLocalTestServer
+
+    test_server = SyntheticLocalTestServer()
+    port = test_server.start()
+
+    try:
+        proto_enum = FuzzProtocol(protocol)
+        cfg = FuzzConfig(
+            target_host="127.0.0.1",
+            target_port=port,
+            protocol=proto_enum,
+            max_iterations=iterations,
+            seed=seed,
+            timeout_seconds=2.0,
+        )
+        runner = ProtocolFuzzRunner(cfg)
+        report = runner.run_fuzzing_session()
+        return report.to_dict()
+    finally:
+        test_server.stop()
