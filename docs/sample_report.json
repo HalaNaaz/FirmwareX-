@@ -1,0 +1,336 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-10-28T15:50:01.897955+00:00",
+  "engine": "FirmwareX v0.1.0",
+  "firmware_metadata": {
+    "id": "e5273c10-78f5-41af-ac26-bbf0309c204d",
+    "filename": "sample_iot_router.tar.gz",
+    "sha256": "1dbb13581e76a05a3d7583653f80587a9f09112b76e6a38e49474d58726faaf1",
+    "size_bytes": 601,
+    "format": "gzip_tar",
+    "is_supported": 1,
+    "status": "analysis_completed",
+    "created_at": "2026-10-28T15:50:01.784017+00:00",
+    "extraction_dir": "C:\\Users\\Hala\\Downloads\\Project Files\\FirmwareX\\data\\extracted\\e5273c10-78f5-41af-ac26-bbf0309c204d",
+    "error_message": null
+  },
+  "filesystem_inventory_summary": {
+    "total_items": 10,
+    "elf_count": 2
+  },
+  "mitigation_matrix": {
+    "total_binaries": 2,
+    "reports": [
+      {
+        "file_path": "bin/daemon_arm",
+        "is_valid_elf": true,
+        "architecture": "ARM32",
+        "bitness": 32,
+        "endianness": "little",
+        "elf_type": "ET_EXEC",
+        "is_stripped": true,
+        "is_static": true,
+        "nx": {
+          "status": "not_detected",
+          "evidence": "PT_GNU_STACK header has execute flag enabled (PF_X). Stack is executable.",
+          "details": null
+        },
+        "pie": {
+          "status": "not_detected",
+          "evidence": "Standard executable without PIE (ET_EXEC). Base address is fixed.",
+          "details": null
+        },
+        "relro": {
+          "status": "not_detected",
+          "evidence": "No PT_GNU_RELRO segment found. Global Offset Table is fully writable.",
+          "details": null
+        },
+        "canary": {
+          "status": "unknown",
+          "evidence": "Binary is stripped and statically linked. Canary status cannot be verified from symbols.",
+          "details": null
+        },
+        "fortify": {
+          "status": "not_detected",
+          "evidence": "No fortified (__*_chk) glibc wrappers detected.",
+          "details": null
+        },
+        "suspicious_sinks": [],
+        "imported_symbols_count": 0,
+        "error_message": null
+      },
+      {
+        "file_path": "bin/service_mips",
+        "is_valid_elf": true,
+        "architecture": "MIPS",
+        "bitness": 32,
+        "endianness": "big",
+        "elf_type": "ET_EXEC",
+        "is_stripped": true,
+        "is_static": true,
+        "nx": {
+          "status": "enabled",
+          "evidence": "PT_GNU_STACK header present without PF_X flag. Non-executable stack enforced.",
+          "details": null
+        },
+        "pie": {
+          "status": "not_detected",
+          "evidence": "Standard executable without PIE (ET_EXEC). Base address is fixed.",
+          "details": null
+        },
+        "relro": {
+          "status": "enabled",
+          "evidence": "Partial RELRO enabled (PT_GNU_RELRO present, but BIND_NOW is absent).",
+          "details": "partial_relro"
+        },
+        "canary": {
+          "status": "unknown",
+          "evidence": "Binary is stripped and statically linked. Canary status cannot be verified from symbols.",
+          "details": null
+        },
+        "fortify": {
+          "status": "not_detected",
+          "evidence": "No fortified (__*_chk) glibc wrappers detected.",
+          "details": null
+        },
+        "suspicious_sinks": [],
+        "imported_symbols_count": 0,
+        "error_message": null
+      }
+    ]
+  },
+  "findings_appendix_a": [
+    {
+      "vulnerability_id": "4c0412f2-d5fb-45ad-aa8e-9197413eafd8",
+      "firmware_id": "e5273c10-78f5-41af-ac26-bbf0309c204d",
+      "binary": "etc/config.json",
+      "architecture": null,
+      "category": "weak_crypto",
+      "cwe": "CWE-328",
+      "address": null,
+      "sink": null,
+      "source": "file:etc/config.json#L1",
+      "tainted_path": [],
+      "crash_state": {
+        "fault_address": null,
+        "registers": null,
+        "overflow_offset": null,
+        "stack_hash": null
+      },
+      "risk_rating": "medium",
+      "confidence": "heuristic",
+      "evidence_ref": "sha256:3cb426dd361593c9...fa71c51d",
+      "redacted": true,
+      "status": "new",
+      "detected_at": "2026-10-28T15:50:01.872165+00:00",
+      "details": {
+        "type": "MD5 Hash Function Reference",
+        "preview": "{\"device\": \"RouterX\", \"api_key\": \"AKIAIOSFODNN7EXAMPLE\", \"crypto\": \"MD5_Init\"}",
+        "description": "Reference to cryptographically broken MD5 hash algorithm."
+      }
+    },
+    {
+      "vulnerability_id": "1a549463-c1c3-4023-9fdd-4d6e5f14c90b",
+      "firmware_id": "e5273c10-78f5-41af-ac26-bbf0309c204d",
+      "binary": "etc/shadow",
+      "architecture": null,
+      "category": "hardcoded_secret",
+      "cwe": "CWE-798",
+      "address": null,
+      "sink": null,
+      "source": "file:etc/shadow#L1",
+      "tainted_path": [],
+      "crash_state": {
+        "fault_address": null,
+        "registers": null,
+        "overflow_offset": null,
+        "stack_hash": null
+      },
+      "risk_rating": "medium",
+      "confidence": "heuristic",
+      "evidence_ref": "5e932134e1a9fb9b355e07d5ece7d577fdcbc555f83e87e11eb8e506acfdefc8",
+      "redacted": true,
+      "status": "new",
+      "detected_at": "2026-10-28T15:50:01.872188+00:00",
+      "details": {
+        "type": "High-Entropy Candidate Secret",
+        "preview": "dum********************************************tuv",
+        "description": "High-entropy string anomaly detected (Shannon H=4.84). Potential token or key."
+      }
+    },
+    {
+      "vulnerability_id": "d8d9b452-1b64-4510-9a1a-5fbd4fb70612",
+      "firmware_id": "e5273c10-78f5-41af-ac26-bbf0309c204d",
+      "binary": "bin/daemon_arm",
+      "architecture": "ARM32",
+      "category": "missing_mitigation",
+      "cwe": "CWE-119",
+      "address": null,
+      "sink": null,
+      "source": null,
+      "tainted_path": [],
+      "crash_state": {
+        "fault_address": null,
+        "registers": null,
+        "overflow_offset": null,
+        "stack_hash": null
+      },
+      "risk_rating": "medium",
+      "confidence": "probable",
+      "evidence_ref": "elf:pt_gnu_stack_missing_or_executable",
+      "redacted": false,
+      "status": "new",
+      "detected_at": "2026-10-28T15:50:01.872200+00:00",
+      "details": {
+        "type": "Missing Stack Execution Protection (NX/DEP Disabled)",
+        "preview": "PT_GNU_STACK header has execute flag enabled (PF_X). Stack is executable.",
+        "description": "Binary lacks non-executable stack protection, facilitating arbitrary code execution via buffer overflow."
+      }
+    },
+    {
+      "vulnerability_id": "11ac333f-b6d7-4515-9da4-e0e3c50ede40",
+      "firmware_id": "e5273c10-78f5-41af-ac26-bbf0309c204d",
+      "binary": "bin/daemon_arm",
+      "architecture": "ARM32",
+      "category": "missing_mitigation",
+      "cwe": "CWE-119",
+      "address": null,
+      "sink": null,
+      "source": null,
+      "tainted_path": [],
+      "crash_state": {
+        "fault_address": null,
+        "registers": null,
+        "overflow_offset": null,
+        "stack_hash": null
+      },
+      "risk_rating": "low",
+      "confidence": "probable",
+      "evidence_ref": "elf:pie_disabled",
+      "redacted": false,
+      "status": "new",
+      "detected_at": "2026-10-28T15:50:01.872207+00:00",
+      "details": {
+        "type": "Position-Independent Executable (PIE) Not Detected",
+        "preview": "Standard executable without PIE (ET_EXEC). Base address is fixed.",
+        "description": "Fixed base address execution limits the effectiveness of operating system ASLR."
+      }
+    },
+    {
+      "vulnerability_id": "8297e26a-287c-4cd8-abc9-44d860ca5aa2",
+      "firmware_id": "e5273c10-78f5-41af-ac26-bbf0309c204d",
+      "binary": "bin/daemon_arm",
+      "architecture": "ARM32",
+      "category": "missing_mitigation",
+      "cwe": "CWE-119",
+      "address": null,
+      "sink": null,
+      "source": null,
+      "tainted_path": [],
+      "crash_state": {
+        "fault_address": null,
+        "registers": null,
+        "overflow_offset": null,
+        "stack_hash": null
+      },
+      "risk_rating": "low",
+      "confidence": "probable",
+      "evidence_ref": "elf:relro_disabled",
+      "redacted": false,
+      "status": "new",
+      "detected_at": "2026-10-28T15:50:01.872212+00:00",
+      "details": {
+        "type": "RELRO Disabled (Writable GOT)",
+        "preview": "No PT_GNU_RELRO segment found. Global Offset Table is fully writable.",
+        "description": "Global Offset Table (GOT) remains writable, exposing control flow to hijacking."
+      }
+    },
+    {
+      "vulnerability_id": "1d6d040f-7bfd-4fd3-b17e-6aea64e6b744",
+      "firmware_id": "e5273c10-78f5-41af-ac26-bbf0309c204d",
+      "binary": "bin/service_mips",
+      "architecture": "MIPS",
+      "category": "missing_mitigation",
+      "cwe": "CWE-119",
+      "address": null,
+      "sink": null,
+      "source": null,
+      "tainted_path": [],
+      "crash_state": {
+        "fault_address": null,
+        "registers": null,
+        "overflow_offset": null,
+        "stack_hash": null
+      },
+      "risk_rating": "low",
+      "confidence": "probable",
+      "evidence_ref": "elf:pie_disabled",
+      "redacted": false,
+      "status": "new",
+      "detected_at": "2026-10-28T15:50:01.872225+00:00",
+      "details": {
+        "type": "Position-Independent Executable (PIE) Not Detected",
+        "preview": "Standard executable without PIE (ET_EXEC). Base address is fixed.",
+        "description": "Fixed base address execution limits the effectiveness of operating system ASLR."
+      }
+    },
+    {
+      "vulnerability_id": "16add899-a93c-45f0-b3ad-bb0f61c60bda",
+      "firmware_id": "e5273c10-78f5-41af-ac26-bbf0309c204d",
+      "binary": "etc/config.json",
+      "architecture": null,
+      "category": "hardcoded_secret",
+      "cwe": "CWE-798",
+      "address": null,
+      "sink": null,
+      "source": "file:etc/config.json#L1",
+      "tainted_path": [],
+      "crash_state": {
+        "fault_address": null,
+        "registers": null,
+        "overflow_offset": null,
+        "stack_hash": null
+      },
+      "risk_rating": "high",
+      "confidence": "probable",
+      "evidence_ref": "1a5d44a2dca19669d72edf4c4f1c27c4c1ca4b4408fbb17f6ce4ad452d78ddb3",
+      "redacted": true,
+      "status": "new",
+      "detected_at": "2026-10-28T15:50:01.872140+00:00",
+      "details": {
+        "type": "AWS Access Key",
+        "preview": "AKI**************PLE",
+        "description": "Hardcoded AWS Access Key identifier."
+      }
+    },
+    {
+      "vulnerability_id": "2f6e34bf-cdc6-4211-9908-cf17c71bed06",
+      "firmware_id": "e5273c10-78f5-41af-ac26-bbf0309c204d",
+      "binary": "etc/shadow",
+      "architecture": null,
+      "category": "hardcoded_secret",
+      "cwe": "CWE-798",
+      "address": null,
+      "sink": null,
+      "source": "file:etc/shadow#L1",
+      "tainted_path": [],
+      "crash_state": {
+        "fault_address": null,
+        "registers": null,
+        "overflow_offset": null,
+        "stack_hash": null
+      },
+      "risk_rating": "critical",
+      "confidence": "probable",
+      "evidence_ref": "49e7927b09cded9a32083f6b7f8c1fcb93ed028d6f058ee3c2c6d5558c9935f1",
+      "redacted": true,
+      "status": "new",
+      "detected_at": "2026-10-28T15:50:01.872175+00:00",
+      "details": {
+        "type": "Hardcoded /etc/shadow Hash",
+        "preview": "roo**************************************************************uv:",
+        "description": "Pre-configured password hash detected in shadow password database."
+      }
+    }
+  ]
+}

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FirmwareX | IoT Firmware Attack Surface & Vulnerability Analysis Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .badge-critical { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+        .badge-high { background-color: #ffedd5; color: #9a3412; border: 1px solid #fb923c; }
+        .badge-medium { background-color: #fef9c3; color: #854d0e; border: 1px solid #facc15; }
+        .badge-low { background-color: #dbeafe; color: #1e40af; border: 1px solid #60a5fa; }
+        .badge-info { background-color: #f3f4f6; color: #374151; border: 1px solid #9ca3af; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-xl text-white shadow-inner">
+                FX
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                    FirmwareX
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-900 text-indigo-300 border border-indigo-700">v0.1.0</span>
+                </h1>
+                <p class="text-xs text-slate-400">Automated IoT Attack Surface & Binary Vulnerability Analysis</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+                <span class="w-2 h-2 mr-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                Sandbox Ready (Egress Denied)
+            </span>
+            <a href="/docs" target="_blank" class="text-xs text-slate-300 hover:text-white bg-slate-700 px-3 py-1.5 rounded transition">API Docs (Swagger)</a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+        <!-- System Banner & Deferred Notice -->
+        <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+            <div class="text-sm">
+                <span class="font-semibold text-slate-200">Phase 1 Execution Scope:</span>
+                <span class="text-slate-400"> Ingestion, safe extraction (Zip-Slip guard), file inventory, cross-arch ELF hardening audit, credential redaction & Appendix A schema export.</span>
+            </div>
+            <div class="text-xs bg-slate-900 border border-amber-600/40 text-amber-300 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                <span>⚠️ Note: Full QEMU emulation & dynamic symbolic execution deferred in Phase 1</span>
+            </div>
+        </div>
+
+        <!-- Ingestion / Upload Section -->
+        <section class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-sm">
+            <h2 class="text-base font-semibold text-white mb-2 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                Upload Firmware Archive
+            </h2>
+            <p class="text-xs text-slate-400 mb-4">
+                Supported formats: <code class="text-slate-300 font-mono">.zip, .tar, .tar.gz, .tgz, .tar.bz2, .tar.xz</code> (Max upload: 500 MB). Proprietary raw flash images require external container adapters.
+            </p>
+
+            <form id="uploadForm" class="space-y-4">
+                <div class="border-2 border-dashed border-slate-600 hover:border-indigo-500 rounded-xl p-6 text-center cursor-pointer transition bg-slate-900/50" id="dropArea">
+                    <input type="file" id="firmwareFile" class="hidden" accept=".zip,.tar,.gz,.tgz,.bz2,.xz,.bin,.img" required />
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                        <svg class="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <p class="text-sm font-medium text-slate-300" id="fileLabel">Click to select firmware image or drop file here</p>
+                        <p class="text-xs text-slate-500">Sha-256 digest calculated on ingestion</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <div id="uploadFeedback" class="text-xs text-slate-400"></div>
+                    <button type="submit" id="submitBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2">
+                        <span id="btnSpinner" class="hidden animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+                        <span id="btnText">Ingest & Analyse</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Active Analysis View (Hidden until upload or selection) -->
+        <section id="analysisView" class="hidden space-y-6">
+            <!-- Header Summary Card -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h3 id="fwFilename" class="text-xl font-bold text-white font-mono">firmware.tar.gz</h3>
+                            <span id="fwStatusBadge" class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">Completed</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1 font-mono">SHA-256: <span id="fwSha256" class="text-slate-300"></span></p>
+                    </div>
+                    <div class="flex gap-2">
+                        <a id="downloadReportBtn" href="#" target="_blank" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            Export JSON Report
+                        </a>
+                    </div>
+                </div>
+
+                <!-- KPI Tiles -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div class="bg-slate-900/80 border border-slate-700 rounded-lg p-3">
+                        <p class="text-xs text-slate-400">Total Files Extracted</p>
+                        <p id="kpiFileCount" class="text-2xl font-bold text-white mt-1">0</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-700 rounded-lg p-3">
+                        <p class="text-xs text-slate-400">ELFs Audited</p>
+                        <p id="kpiElfCount" class="text-2xl font-bold text-indigo-400 mt-1">0</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-700 rounded-lg p-3">
+                        <p class="text-xs text-slate-400">NX Enabled Ratio</p>
+                        <p id="kpiNxRatio" class="text-2xl font-bold text-emerald-400 mt-1">0%</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-700 rounded-lg p-3">
+                        <p class="text-xs text-slate-400">Security Findings</p>
+                        <p id="kpiFindingsCount" class="text-2xl font-bold text-amber-400 mt-1">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabbed Explorer -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                <div class="flex border-b border-slate-700 bg-slate-800/80 px-4">
+                    <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-indigo-500 text-indigo-400" data-tab="findingsTab">Findings & Flaws (Appendix A)</button>
+                    <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200" data-tab="mitigationTab">Binary Hardening Matrix</button>
+                    <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200" data-tab="filesystemTab">Filesystem Inventory</button>
+                </div>
+
+                <!-- Tab 1: Findings -->
+                <div id="findingsTab" class="tab-content p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-sm font-semibold text-slate-200">Normalized Vulnerabilities & Posture Defects</h4>
+                        <span class="text-xs text-slate-400">Strictly maps to Appendix A schema; secrets redacted</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold">
+                                <tr>
+                                    <th class="p-3">Severity</th>
+                                    <th class="p-3">CWE</th>
+                                    <th class="p-3">Category</th>
+                                    <th class="p-3">Target File / Binary</th>
+                                    <th class="p-3">Confidence</th>
+                                    <th class="p-3">Redacted Evidence / Preview</th>
+                                </tr>
+                            </thead>
+                            <tbody id="findingsTableBody" class="divide-y divide-slate-700 font-mono">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Binary Mitigation Matrix -->
+                <div id="mitigationTab" class="tab-content p-6 hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-sm font-semibold text-slate-200">Per-Binary Exploit Mitigation Posture</h4>
+                        <span class="text-xs text-slate-400">Audited via PT_GNU_STACK, ET_DYN, PT_GNU_RELRO, and symbols</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold">
+                                <tr>
+                                    <th class="p-3">Binary</th>
+                                    <th class="p-3">Arch / Bits</th>
+                                    <th class="p-3">NX / DEP</th>
+                                    <th class="p-3">PIE / ASLR</th>
+                                    <th class="p-3">RELRO</th>
+                                    <th class="p-3">Canary</th>
+                                    <th class="p-3">FORTIFY</th>
+                                    <th class="p-3">Suspicious Sinks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mitigationTableBody" class="divide-y divide-slate-700 font-mono">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Filesystem Inventory -->
+                <div id="filesystemTab" class="tab-content p-6 hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-sm font-semibold text-slate-200">Extracted Rootfs Inventory</h4>
+                        <span class="text-xs text-slate-400">Canonical relative paths and SHA-256 digests</span>
+                    </div>
+                    <div class="overflow-x-auto max-h-96">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold sticky top-0">
+                                <tr>
+                                    <th class="p-3">Path</th>
+                                    <th class="p-3">Classification</th>
+                                    <th class="p-3">Size (Bytes)</th>
+                                    <th class="p-3">SHA-256 Digest</th>
+                                </tr>
+                            </thead>
+                            <tbody id="filesystemTableBody" class="divide-y divide-slate-700 font-mono">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 border-t border-slate-700 px-6 py-4 text-center text-xs text-slate-500">
+        Project Unit42-FirmwareX · Automated IoT Firmware Attack Surface & Vulnerability Analysis Engine · Internal Engineering Sandbox
+    </footer>
+
+    <!-- Client-Side Dashboard Logic -->
+    <script>
+        const fileInput = document.getElementById('firmwareFile');
+        const dropArea = document.getElementById('dropArea');
+        const fileLabel = document.getElementById('fileLabel');
+        const uploadForm = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const btnText = document.getElementById('btnText');
+        const uploadFeedback = document.getElementById('uploadFeedback');
+        const analysisView = document.getElementById('analysisView');
+
+        // File picker triggers
+        dropArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileLabel.textContent = fileInput.files[0].name;
+            }
+        });
+
+        // Tab Switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('border-indigo-500', 'text-indigo-400');
+                    b.classList.add('border-transparent', 'text-slate-400');
+                });
+                btn.classList.add('border-indigo-500', 'text-indigo-400');
+                btn.classList.remove('border-transparent', 'text-slate-400');
+
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(btn.dataset.tab).classList.remove('hidden');
+            });
+        });
+
+        // Upload and Ingestion Submit Handler
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!fileInput.files.length) return;
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            btnSpinner.classList.remove('hidden');
+            btnText.textContent = 'Processing Pipeline...';
+            submitBtn.disabled = true;
+            uploadFeedback.textContent = 'Streaming image and enforcing safe extraction...';
+
+            try {
+                const response = await fetch('/api/v1/firmware/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    uploadFeedback.innerHTML = `<span class="text-rose-400 font-semibold">Error: ${data.detail || data.message || 'Upload failed'}</span>`;
+                    return;
+                }
+
+                uploadFeedback.innerHTML = `<span class="text-emerald-400 font-semibold">Analysis complete! Loading dashboard...</span>`;
+                loadDashboard(data.firmware_id);
+
+            } catch (err) {
+                uploadFeedback.innerHTML = `<span class="text-rose-400 font-semibold">Network error: ${err.message}</span>`;
+            } finally {
+                btnSpinner.classList.add('hidden');
+                btnText.textContent = 'Ingest & Analyse';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Load complete dashboard data for a given firmware_id
+        async function loadDashboard(firmwareId) {
+            try {
+                // 1. Fetch metadata
+                const fwRes = await fetch(`/api/v1/firmware/${firmwareId}`);
+                const fw = await fwRes.json();
+
+                document.getElementById('fwFilename').textContent = fw.filename;
+                document.getElementById('fwSha256').textContent = fw.sha256;
+                document.getElementById('downloadReportBtn').href = `/api/v1/firmware/${firmwareId}/report`;
+
+                // 2. Fetch inventory
+                const fsRes = await fetch(`/api/v1/firmware/${firmwareId}/filesystem`);
+                const fs = await fsRes.json();
+                document.getElementById('kpiFileCount').textContent = fs.total_files;
+
+                const fsBody = document.getElementById('filesystemTableBody');
+                fsBody.innerHTML = '';
+                fs.files.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-700/50';
+                    tr.innerHTML = `
+                        <td class="p-3 font-semibold text-slate-200">${item.path}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[11px] bg-slate-700 text-slate-300">${item.type}</span></td>
+                        <td class="p-3 text-slate-400">${item.size_bytes.toLocaleString()}</td>
+                        <td class="p-3 text-slate-400 text-[11px]">${item.sha256 || '-'}</td>
+                    `;
+                    fsBody.appendChild(tr);
+                });
+
+                // 3. Fetch binary audit
+                const baRes = await fetch(`/api/v1/firmware/${firmwareId}/binary-audit`);
+                const ba = await baRes.json();
+                document.getElementById('kpiElfCount').textContent = ba.summary.total_binaries;
+                document.getElementById('kpiNxRatio').textContent = ba.summary.total_binaries > 0 
+                    ? Math.round((ba.summary.nx_enabled / ba.summary.total_binaries) * 100) + '%'
+                    : '0%';
+
+                const baBody = document.getElementById('mitigationTableBody');
+                baBody.innerHTML = '';
+                ba.binaries.forEach(b => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-700/50';
+                    const nxColor = b.nx.status === 'enabled' ? 'text-emerald-400' : 'text-rose-400';
+                    const pieColor = b.pie.status === 'enabled' ? 'text-emerald-400' : 'text-rose-400';
+                    const relroColor = b.relro.status === 'enabled' ? 'text-emerald-400' : 'text-rose-400';
+                    const canaryColor = b.canary.status === 'enabled' ? 'text-emerald-400' : 'text-amber-400';
+                    const fortifyColor = b.fortify.status === 'enabled' ? 'text-emerald-400' : 'text-slate-400';
+
+                    tr.innerHTML = `
+                        <td class="p-3 font-semibold text-slate-200">${b.file_path}</td>
+                        <td class="p-3">${b.architecture} (${b.bitness}-bit)</td>
+                        <td class="p-3 font-semibold ${nxColor}">${b.nx.status}</td>
+                        <td class="p-3 font-semibold ${pieColor}">${b.pie.status}</td>
+                        <td class="p-3 font-semibold ${relroColor}">${b.relro.status}</td>
+                        <td class="p-3 font-semibold ${canaryColor}">${b.canary.status}</td>
+                        <td class="p-3 font-semibold ${fortifyColor}">${b.fortify.status}</td>
+                        <td class="p-3 text-amber-300">${b.suspicious_sinks ? b.suspicious_sinks.length : 0}</td>
+                    `;
+                    baBody.appendChild(tr);
+                });
+
+                // 4. Fetch vulnerabilities
+                const vulnsRes = await fetch(`/api/v1/firmware/${firmwareId}/vulnerabilities`);
+                const vulns = await vulnsRes.json();
+                document.getElementById('kpiFindingsCount').textContent = vulns.total_findings;
+
+                const vBody = document.getElementById('findingsTableBody');
+                vBody.innerHTML = '';
+                vulns.findings.forEach(f => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-700/50';
+                    const sevBadge = `badge-${f.risk_rating.toLowerCase()}`;
+                    tr.innerHTML = `
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${sevBadge}">${f.risk_rating.toUpperCase()}</span></td>
+                        <td class="p-3 font-bold text-slate-200">${f.cwe}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[11px] bg-slate-700 text-slate-300">${f.category}</span></td>
+                        <td class="p-3 text-slate-300">${f.binary}</td>
+                        <td class="p-3"><span class="text-slate-400 italic">${f.confidence}</span></td>
+                        <td class="p-3 text-slate-300 truncate max-w-xs" title="${f.details ? f.details.preview : ''}">${f.details ? f.details.preview : f.evidence_ref}</td>
+                    `;
+                    vBody.appendChild(tr);
+                });
+
+                analysisView.classList.remove('hidden');
+                analysisView.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (err) {
+                console.error("Failed to load dashboard:", err);
+            }
+        }
+    </script>
+</body>
+</html>
