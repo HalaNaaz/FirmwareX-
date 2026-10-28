@@ -12,341 +12,778 @@
             theme: {
                 extend: {
                     colors: {
+                        darkbg: '#040507',
                         graphite: {
-                            950: '#07090E',
-                            900: '#0B0F17',
-                            850: '#101522',
-                            800: '#161D2E',
-                            700: '#232D42',
-                            600: '#34415C',
+                            950: '#06070a',
+                            900: '#0c0f17',
+                            850: '#111624',
+                            800: '#181f33',
+                            700: '#26314f',
                         },
                         cyber: {
                             cyan: '#00F0FF',
                             neon: '#00FF9D',
                             amber: '#FFB800',
                             red: '#FF3366',
+                            purple: '#8B5CF6',
+                            pink: '#F43F5E',
+                            lime: '#A3E635',
                         }
                     },
                     fontFamily: {
-                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
                         sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+                    },
+                    borderRadius: {
+                        'glass': '26px',
+                        'glass-sm': '18px',
                     }
                 }
             }
-        }
+        };
     </script>
     <style>
-        /* Custom scrollbar for dense data views */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0B0F17; }
-        ::-webkit-scrollbar-thumb { background: #232D42; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #34415C; }
+        :root {
+            --bg-color: #040507;
+            --glass-bg: rgba(13, 16, 26, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-hover: rgba(255, 255, 255, 0.16);
+            --glass-radius: 26px;
+        }
 
-        /* Severity Badges with WCAG High-Contrast Styling */
-        .sev-critical { background: rgba(239, 68, 68, 0.15); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.4); }
-        .sev-high { background: rgba(249, 115, 22, 0.15); color: #FDBA74; border: 1px solid rgba(249, 115, 22, 0.4); }
-        .sev-medium { background: rgba(245, 158, 11, 0.15); color: #FDE68A; border: 1px solid rgba(245, 158, 11, 0.4); }
-        .sev-low { background: rgba(14, 165, 233, 0.15); color: #7DD3FC; border: 1px solid rgba(14, 165, 233, 0.4); }
-        .sev-info { background: rgba(148, 163, 184, 0.12); color: #CBD5E1; border: 1px solid rgba(148, 163, 184, 0.3); }
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(67, 56, 202, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.04) 0%, transparent 60%);
+            background-attachment: fixed;
+            color: #F8FAFC;
+            min-height: 100vh;
+        }
 
-        /* Status Pills */
-        .status-enabled { color: #34D399; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); }
-        .status-disabled { color: #F87171; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .status-partial { color: #FBBF24; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); }
-        .status-na { color: #94A3B8; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2); }
+        /* Glass Surface Classes */
+        .glass-panel {
+            background: rgba(12, 16, 26, 0.74);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--glass-radius);
+            box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.65);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .glass-panel:hover {
+            border-color: var(--glass-border-hover);
+        }
+
+        /* Gradient Feature Glass Cards matching Reference */
+        .glass-card-purple {
+            background: linear-gradient(135deg, #3730a3 0%, #1e1b4b 32%, #0b0f1d 85%);
+            border: 1px solid rgba(165, 180, 252, 0.22);
+            border-radius: var(--glass-radius);
+            box-shadow: 0 25px 50px -12px rgba(55, 48, 163, 0.3);
+        }
+
+        .glass-card-lime {
+            background: linear-gradient(135deg, #a3e635 0%, #4d7c0f 40%, #152405 85%);
+            border: 1px solid rgba(190, 242, 100, 0.35);
+            border-radius: var(--glass-radius);
+            box-shadow: 0 25px 50px -12px rgba(163, 230, 53, 0.25);
+            color: #051002;
+        }
+
+        .glass-card-pink {
+            background: linear-gradient(135deg, #f43f5e 0%, #881337 42%, #1a040e 85%);
+            border: 1px solid rgba(251, 113, 133, 0.25);
+            border-radius: var(--glass-radius);
+            box-shadow: 0 25px 50px -12px rgba(244, 63, 94, 0.25);
+        }
+
+        .glass-card-amber {
+            background: linear-gradient(135deg, #d97706 0%, #78350f 42%, #1a0a02 85%);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            border-radius: var(--glass-radius);
+            box-shadow: 0 25px 50px -12px rgba(217, 119, 6, 0.25);
+        }
+
+        .glass-card-teal {
+            background: linear-gradient(135deg, #10b981 0%, #064e3b 42%, #021f15 85%);
+            border: 1px solid rgba(52, 211, 153, 0.25);
+            border-radius: var(--glass-radius);
+            box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.25);
+        }
+
+        /* Pill Segmented Controls */
+        .pill-btn {
+            border-radius: 9999px;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .pill-btn-active {
+            background-color: #FFFFFF;
+            color: #050608;
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.25);
+        }
+        .pill-btn-inactive {
+            color: #94A3B8;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .pill-btn-inactive:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Dot-Matrix Styled Hero Number */
+        .dot-matrix-display {
+            font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, monospace;
+            letter-spacing: 0.06em;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Equalizer Bars */
+        .eq-bar {
+            width: 3px;
+            border-radius: 2px;
+            background: #FBBF24;
+            display: inline-block;
+            margin: 0 1px;
+        }
+
+        /* Dashed Progress Ticks */
+        .dash-tick {
+            width: 3px;
+            height: 12px;
+            border-radius: 1px;
+            display: inline-block;
+            margin: 0 1px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(8, 11, 18, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Accessibility & Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
     </style>
 </head>
-<body class="bg-graphite-950 text-slate-200 font-sans antialiased h-screen flex overflow-hidden select-none">
+<body class="font-sans antialiased selection:bg-cyan-500 selection:text-black">
 
-    <!-- ==================== LEFT PERSISTENT SIDEBAR ==================== -->
-    <aside class="w-64 bg-graphite-900 border-r border-graphite-700/60 flex flex-col justify-between shrink-0 z-20">
-        <div>
-            <!-- Brand / Logo Header -->
-            <div class="h-16 flex items-center px-5 border-b border-graphite-700/60 gap-3 bg-graphite-900">
-                <div class="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-500/50 flex items-center justify-center text-cyber-cyan shadow-[0_0_12px_rgba(0,240,255,0.2)]">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-sm font-bold tracking-wider text-white flex items-center gap-1.5">
-                        FIRMWARE<span class="text-cyber-cyan">X</span>
-                        <span class="text-[10px] px-1.5 py-0.2 rounded bg-graphite-800 text-slate-400 font-mono border border-graphite-700">v0.1</span>
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- ==================== TOP HEADER ==================== -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-white/5">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2.5">
+                        <span class="w-3.5 h-3.5 rounded-full bg-cyber-cyan shadow-[0_0_12px_#00F0FF]"></span>
+                        Overview
                     </h1>
-                    <p class="text-[10px] font-mono text-cyan-400/80 uppercase tracking-widest font-semibold">SOC Command Center</p>
+                    <span id="header-timestamp" class="text-xs text-slate-400 font-medium">Updated today, 21:45</span>
                 </div>
+                <p class="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                    <span class="text-slate-300 font-semibold tracking-wide">FIRMWAREX</span>
+                    <span class="text-white/20">|</span>
+                    <span>IoT Firmware Attack Surface &amp; SOC Command Center</span>
+                    <span class="text-white/20">|</span>
+                    <span class="text-[10px] font-mono text-cyan-400">v0.1.0</span>
+                </p>
             </div>
 
-            <!-- Navigation Menu -->
-            <nav class="p-3 space-y-1">
-                <button onclick="switchView('overview')" id="nav-overview" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-white bg-graphite-800 border border-cyan-500/30 transition shadow-sm">
-                    <svg class="w-4 h-4 text-cyber-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span>Overview</span>
-                </button>
+            <div class="flex flex-wrap items-center gap-2.5">
+                <!-- Navigation Segmented Pill Controls -->
+                <nav class="flex items-center p-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold" aria-label="Main Views">
+                    <button onclick="switchView('overview')" id="nav-overview" class="pill-btn pill-btn-active">Overview</button>
+                    <button onclick="switchView('analysis')" id="nav-analysis" class="pill-btn pill-btn-inactive">Ingestion</button>
+                    <button onclick="switchView('filesystem')" id="nav-filesystem" class="pill-btn pill-btn-inactive">Filesystem</button>
+                    <button onclick="switchView('mitigation')" id="nav-mitigation" class="pill-btn pill-btn-inactive">Mitigations</button>
+                    <button onclick="switchView('findings')" id="nav-findings" class="pill-btn pill-btn-inactive">
+                        Findings <span id="badge-total-findings" class="ml-1 px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">0</span>
+                    </button>
+                    <button onclick="switchView('reports')" id="nav-reports" class="pill-btn pill-btn-inactive">Reports</button>
+                    <button onclick="switchView('system')" id="nav-system" class="pill-btn pill-btn-inactive">System</button>
+                </nav>
 
-                <button onclick="switchView('analysis')" id="nav-analysis" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-graphite-850 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                    <span>Firmware Ingestion</span>
-                </button>
-
-                <button onclick="switchView('filesystem')" id="nav-filesystem" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-graphite-850 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                    <span>Filesystem Explorer</span>
-                </button>
-
-                <button onclick="switchView('mitigation')" id="nav-mitigation" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-graphite-850 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    <span>Mitigation Matrix</span>
-                </button>
-
-                <button onclick="switchView('findings')" id="nav-findings" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-graphite-850 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    <span>Findings & Triage</span>
-                    <span id="badge-total-findings" class="ml-auto text-[10px] px-1.5 py-0.5 rounded-full font-mono bg-graphite-800 text-slate-400 border border-graphite-700">0</span>
-                </button>
-
-                <button onclick="switchView('reports')" id="nav-reports" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-graphite-850 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    <span>Reports & Export</span>
-                </button>
-
-                <button onclick="switchView('system')" id="nav-system" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-graphite-850 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    <span>System & Telemetry</span>
-                </button>
-            </nav>
-        </div>
-
-        <!-- Containment Status Card (Bottom Sidebar) -->
-        <div class="p-3 m-3 bg-graphite-950 border border-graphite-700/60 rounded-xl">
-            <div class="flex items-center gap-2 mb-1.5">
-                <span class="w-2 h-2 rounded-full bg-cyber-neon animate-pulse"></span>
-                <span class="text-[11px] font-mono font-bold tracking-wider text-emerald-400">ISOLATION ACTIVE</span>
-            </div>
-            <p class="text-[10px] text-slate-400 leading-tight">Egress Denied · Static Header Analysis Only · Host Execution Blocked</p>
-        </div>
-    </aside>
-
-    <!-- ==================== MAIN WORKSPACE ==================== -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden bg-graphite-950">
-        <!-- Top App Bar -->
-        <header class="h-16 bg-graphite-900 border-b border-graphite-700/60 px-6 flex items-center justify-between shrink-0">
-            <!-- Breadcrumbs -->
-            <div class="flex items-center gap-3">
-                <div class="text-xs font-mono text-slate-400 flex items-center gap-2">
-                    <span>FIRMWAREX</span>
-                    <span>/</span>
-                    <span id="breadcrumb-current" class="text-cyber-cyan font-bold uppercase">Overview</span>
-                </div>
-            </div>
-
-            <!-- Active Firmware Selector & Action Tools -->
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-mono text-slate-400">TARGET:</span>
-                    <select id="active-firmware-select" onchange="onSelectFirmware(this.value)" class="bg-graphite-800 text-xs font-mono text-slate-200 border border-graphite-700 rounded-lg px-3 py-1.5 focus:border-cyan-500 focus:outline-none max-w-xs truncate">
-                        <option value="">No Firmware Selected</option>
+                <!-- Active Firmware Target Selector -->
+                <div class="relative">
+                    <select id="active-firmware-select" onchange="onSelectFirmware(this.value)" class="h-9 bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-mono border border-white/10 rounded-full px-4 pr-8 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition appearance-none max-w-[200px] truncate cursor-pointer">
+                        <option value="">Ingesting Firmware...</option>
                     </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
                 </div>
 
-                <button onclick="refreshData()" title="Reload data from backend" class="p-1.5 rounded-lg bg-graphite-800 hover:bg-graphite-700 text-slate-400 hover:text-white border border-graphite-700 transition">
+                <!-- Refresh Button -->
+                <button onclick="refreshData()" title="Refresh telemetry from backend" class="h-9 px-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 </button>
 
-                <a href="/docs" target="_blank" class="text-xs font-mono px-3 py-1.5 rounded-lg bg-graphite-800 hover:bg-graphite-700 text-slate-300 hover:text-cyan-400 border border-graphite-700 transition">
-                    Swagger API
+                <!-- System Health Pill -->
+                <div class="h-9 px-3.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-[11px] font-mono text-emerald-400 font-semibold tracking-wider">127.0.0.1 HEALTHY</span>
+                </div>
+
+                <!-- Swagger Docs Link -->
+                <a href="/docs" target="_blank" class="h-9 px-3.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-cyan-400 hover:text-cyan-300 font-semibold transition flex items-center gap-1.5">
+                    <span>API /docs</span>
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                 </a>
             </div>
         </header>
 
-        <!-- View Content Area (Scrollable) -->
-        <main class="flex-1 overflow-y-auto p-6 space-y-6">
-
-            <!-- ==================== VIEW 1: OVERVIEW ==================== -->
+        <!-- Main Content Workspaces -->
+        <main>
+            <!-- ==================== VIEW 1: PREMIUM GLASS OVERVIEW ==================== -->
             <section id="view-overview" class="view-panel space-y-6">
-                <!-- Status Banner for Active Image -->
-                <div id="overview-active-card" class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-5 shadow-sm">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+
+                <!-- ROW 1: HERO VIOLET CARD & RADIAL TACHOMETER GAUGE -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                    <!-- HERO PURPLE/INDIGO CARD (Matches reference Net Worth card) -->
+                    <div class="lg:col-span-8 glass-card-purple p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden min-h-[360px]">
+                        <!-- Top Metadata Row -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+                            <div>
+                                <p class="text-xs uppercase font-bold tracking-wider text-indigo-200/80">Security Posture &amp; Attack Surface</p>
+                                <div class="flex items-baseline gap-3 mt-1.5">
+                                    <span id="hero-findings-metric" class="text-4xl sm:text-5xl font-extrabold text-white dot-matrix-display tracking-tight">008</span>
+                                    <div class="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                                        <span id="hero-critical-badge">3 Critical + 2 High</span>
+                                    </div>
+                                    <span class="text-xs text-indigo-300/70 hidden sm:inline">Normalized to Appendix A</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Legend Dots -->
+                            <div class="flex items-center gap-4 text-xs font-medium text-indigo-200/90 self-start sm:self-auto bg-black/20 px-3.5 py-1.5 rounded-full border border-white/5">
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-white"></span>Hardening</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-indigo-300"></span>Secrets</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Sinks</span>
+                            </div>
+                        </div>
+
+                        <!-- Active Firmware Banner Inside Hero -->
+                        <div class="my-4 px-4 py-2.5 rounded-2xl bg-black/25 border border-white/10 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 relative z-10 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400 font-mono">TARGET:</span>
+                                <span id="ov-filename" class="font-bold font-mono text-cyan-300 truncate max-w-[260px]">sample_iot_router.tar.gz</span>
+                                <span id="ov-status-pill" class="text-[10px] px-2 py-0.5 rounded-full font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">ANALYZED</span>
+                            </div>
+                            <div class="flex items-center gap-3 font-mono text-[11px] text-slate-300">
+                                <span>SHA: <span id="ov-sha256" class="text-slate-400 font-mono">c7c5d542...</span></span>
+                                <a id="ov-report-btn" href="#" target="_blank" class="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white font-sans text-xs transition">View Report</a>
+                            </div>
+                        </div>
+
+                        <!-- Smooth Multi-Layer Flowing Streamgraph SVG (Inspired by reference) -->
+                        <div class="relative mt-2 w-full h-36 z-0">
+                            <svg class="w-full h-full" viewBox="0 0 700 140" preserveAspectRatio="none" fill="none">
+                                <defs>
+                                    <linearGradient id="streamOrange" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stop-color="#FB923C" stop-opacity="0.9" />
+                                        <stop offset="50%" stop-color="#F97316" stop-opacity="0.95" />
+                                        <stop offset="100%" stop-color="#EA580C" stop-opacity="0.9" />
+                                    </linearGradient>
+                                    <linearGradient id="streamLavender" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stop-color="#A5B4FC" stop-opacity="0.75" />
+                                        <stop offset="50%" stop-color="#C7D2FE" stop-opacity="0.85" />
+                                        <stop offset="100%" stop-color="#818CF8" stop-opacity="0.75" />
+                                    </linearGradient>
+                                    <linearGradient id="streamCore" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95" />
+                                        <stop offset="50%" stop-color="#FFFFFF" stop-opacity="1.0" />
+                                        <stop offset="100%" stop-color="#E0E7FF" stop-opacity="0.95" />
+                                    </linearGradient>
+                                </defs>
+
+                                <!-- Flowing Orange Outer Stream Envelope -->
+                                <path d="M 0 35 C 150 15, 300 75, 450 45 C 550 25, 620 40, 700 30 L 700 120 C 620 110, 520 125, 450 105 C 300 70, 150 135, 0 115 Z" fill="url(#streamOrange)" opacity="0.4" />
+                                
+                                <!-- Lavender Middle Flow Stream -->
+                                <path d="M 0 50 C 140 35, 280 80, 430 60 C 530 45, 610 55, 700 48 L 700 108 C 610 100, 520 112, 430 92 C 280 75, 140 118, 0 102 Z" fill="url(#streamLavender)" opacity="0.75" />
+                                
+                                <!-- Bright White Center Energy Core Stream -->
+                                <path d="M 0 68 C 150 58, 280 84, 430 72 C 540 64, 620 70, 700 66 L 700 90 C 620 86, 540 92, 430 84 C 280 82, 150 94, 0 88 Z" fill="url(#streamCore)" />
+
+                                <!-- Vertical Milestone Indicators (Inspired by Jan/May/Oct in reference) -->
+                                <line x1="140" y1="20" x2="140" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
+                                <line x1="430" y1="20" x2="430" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
+                                <line x1="640" y1="20" x2="640" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
+                            </svg>
+
+                            <!-- Milestone Badges -->
+                            <div class="absolute inset-0 flex justify-between items-end px-6 pb-1 text-[11px] font-semibold text-slate-200">
+                                <span class="bg-black/60 px-2.5 py-0.5 rounded-full border border-white/20">Phase 1: Ingest</span>
+                                <span class="bg-black/60 px-2.5 py-0.5 rounded-full border border-white/20">Phase 2: Audit</span>
+                                <span class="bg-black/60 px-2.5 py-0.5 rounded-full border border-white/20">Phase 3: Triage</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RADIAL TACHOMETER / MITIGATION SCORE CARD (Matches reference Allocation card) -->
+                    <div class="lg:col-span-4 glass-panel p-6 sm:p-8 flex flex-col justify-between relative">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Mitigation Score</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Binary Hardening Posture</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-white/10 text-slate-300 border border-white/10">TARGET 80%</span>
+                        </div>
+
+                        <!-- Circular Tachometer Arc SVG Gauge -->
+                        <div class="relative flex items-center justify-center my-4 py-2">
+                            <svg class="w-48 h-32" viewBox="0 0 200 120">
+                                <!-- Background dashed arc -->
+                                <path d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="14" stroke-linecap="round" stroke-dasharray="3, 7" />
+                                <!-- Glowing active gauge arc -->
+                                <path id="tachometer-arc" d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="#00F0FF" stroke-width="14" stroke-linecap="round" stroke-dasharray="190, 300" style="filter: drop-shadow(0 0 8px rgba(0,240,255,0.6));" />
+                            </svg>
+                            <!-- Centered Percentage Metric -->
+                            <div class="absolute bottom-2 text-center">
+                                <div id="stat-nx-ratio" class="text-3xl font-extrabold font-mono text-white tracking-tight">83%</div>
+                                <div class="text-[11px] font-medium uppercase tracking-wider text-slate-400 mt-0.5">Exploit Defenses</div>
+                            </div>
+                        </div>
+
+                        <!-- Allocation Legend Breakdown -->
+                        <div class="space-y-2 text-xs font-mono pt-3 border-t border-white/10">
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-2 text-slate-300">
+                                    <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                                    <span>NX / DEP Stack</span>
+                                </span>
+                                <span class="text-white font-bold" id="gauge-nx-pct">83%</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-2 text-slate-300">
+                                    <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                                    <span>ASLR / PIE Support</span>
+                                </span>
+                                <span class="text-slate-300" id="gauge-pie-pct">50%</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-2 text-slate-300">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                                    <span>Stack Canaries</span>
+                                </span>
+                                <span class="text-slate-300" id="gauge-canary-pct">50%</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-2 text-slate-300">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <span>Full/Partial RELRO</span>
+                                </span>
+                                <span class="text-slate-300" id="gauge-relro-pct">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROW 2: 4 KPI CARDS (Lime Card + Equalizer Card + Pipeline Card + Goals Card) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                    <!-- KPI CARD 1: VIVID LIME GRADIENT (Matches Portfolio Return in reference) -->
+                    <div class="glass-card-lime p-6 flex flex-col justify-between min-h-[175px]">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-black uppercase tracking-wider text-slate-900/80">CONTAINMENT STATUS</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/20 text-slate-900">+100% SAFE</span>
+                        </div>
+                        <div class="my-3">
+                            <div class="flex items-center gap-1.5 text-2xl font-black tracking-tight text-slate-950">
+                                <span>&uarr; 0 HOST EXEC</span>
+                            </div>
+                            <p class="text-[11px] font-semibold text-slate-900/80 mt-1">Docker --network none Verified</p>
+                        </div>
+                        <div class="text-[10px] font-mono text-slate-900/70 border-t border-black/10 pt-2 flex justify-between">
+                            <span>Egress: DENIED</span>
+                            <span>Rootfs: READ-ONLY</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI CARD 2: CHARCOAL GLASS WITH EQUALIZER BARS (Matches Free Cash in reference) -->
+                    <div class="glass-panel p-6 flex flex-col justify-between min-h-[175px]">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider text-[11px]">ROOTFS INVENTORY</span>
+                            <span class="text-slate-500 font-mono text-[11px]">Catalog</span>
+                        </div>
+                        <div class="flex items-baseline justify-between my-2">
+                            <div>
+                                <span id="stat-total-files" class="text-3xl font-extrabold font-mono text-white tracking-tight">6</span>
+                                <span class="text-xs text-slate-400 ml-1">Files</span>
+                            </div>
+                            <div class="text-right">
+                                <span id="stat-total-elfs" class="text-lg font-bold font-mono text-cyan-400">2</span>
+                                <span class="text-[11px] text-slate-400 block">ELFs Audited</span>
+                            </div>
+                        </div>
+                        <!-- Equalizer soundwave visualizer -->
                         <div>
-                            <div class="flex items-center gap-3">
-                                <h2 id="ov-filename" class="text-base font-bold text-white font-mono">No Image Ingested</h2>
-                                <span id="ov-status-pill" class="text-xs px-2.5 py-0.5 rounded-full font-mono font-medium bg-graphite-800 text-slate-400 border border-graphite-700">STANDBY</span>
+                            <div class="flex items-end gap-1 h-5 pt-1" aria-hidden="true">
+                                <div class="eq-bar h-2 bg-amber-400/80"></div>
+                                <div class="eq-bar h-4 bg-amber-400"></div>
+                                <div class="eq-bar h-5 bg-amber-300"></div>
+                                <div class="eq-bar h-3 bg-amber-400/70"></div>
+                                <div class="eq-bar h-2 bg-amber-400/50"></div>
+                                <div class="eq-bar h-4 bg-amber-400"></div>
+                                <div class="eq-bar h-5 bg-amber-300"></div>
+                                <div class="eq-bar h-3 bg-amber-400/60"></div>
+                                <div class="eq-bar h-1 bg-amber-400/30"></div>
+                                <div class="eq-bar h-3 bg-amber-400/60"></div>
+                                <div class="eq-bar h-4 bg-amber-400"></div>
+                                <div class="eq-bar h-2 bg-amber-400/50"></div>
+                                <div class="eq-bar h-1 bg-amber-400/20"></div>
+                                <div class="eq-bar h-3 bg-amber-400/60"></div>
+                                <div class="eq-bar h-5 bg-amber-300"></div>
+                                <div class="eq-bar h-4 bg-amber-400"></div>
+                                <div class="eq-bar h-2 bg-amber-400/40"></div>
                             </div>
-                            <p class="text-xs text-slate-400 font-mono mt-1">SHA-256: <span id="ov-sha256" class="text-slate-300">-</span></p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="switchView('analysis')" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-graphite-950 font-bold text-xs font-mono transition">
-                                + Ingest New Firmware
-                            </button>
-                            <a id="ov-report-btn" href="#" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-graphite-800 hover:bg-graphite-700 text-slate-200 font-mono text-xs border border-graphite-700 transition">
-                                Export Report
-                            </a>
+                    </div>
+
+                    <!-- KPI CARD 3: ANALYSIS PIPELINE STAGES (Matches Next Payments in reference) -->
+                    <div class="glass-panel p-6 flex flex-col justify-between min-h-[175px]">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider text-[11px]">ANALYSIS PIPELINE</span>
+                            <span class="text-slate-500 font-mono text-[11px]">Stage 7/7</span>
+                        </div>
+                        <div class="space-y-2 font-mono text-xs my-1">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-4 h-4 rounded bg-cyan-500/20 text-cyan-300 flex items-center justify-center text-[10px] font-bold">I</span>
+                                    <span class="text-slate-200">Ingest &amp; Hash</span>
+                                </div>
+                                <span class="text-emerald-400 text-[10px]">PASS</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-4 h-4 rounded bg-indigo-500/20 text-indigo-300 flex items-center justify-center text-[10px] font-bold">U</span>
+                                    <span class="text-slate-200">Safe Unpack</span>
+                                </div>
+                                <span class="text-emerald-400 text-[10px]">CLEAN</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-4 h-4 rounded bg-purple-500/20 text-purple-300 flex items-center justify-center text-[10px] font-bold">M</span>
+                                    <span class="text-slate-200">ELF Mitigations</span>
+                                </div>
+                                <span class="text-emerald-400 text-[10px]">AUDITED</span>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-slate-500 font-mono pt-1 border-t border-white/5 flex justify-between">
+                            <span>Total images: <strong id="stat-total-images" class="text-white">1</strong></span>
+                            <span class="text-cyan-400 font-semibold">Triage Active</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI CARD 4: DEFENSE BENCHMARKS (Matches Goals in reference) -->
+                    <div class="glass-panel p-6 flex flex-col justify-between min-h-[175px]">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider text-[11px]">SECURITY BENCHMARKS</span>
+                            <span class="text-slate-500 font-mono text-[11px]">2 Target</span>
+                        </div>
+                        <div class="space-y-3 font-mono text-xs my-1">
+                            <div>
+                                <div class="flex justify-between text-[11px] mb-1">
+                                    <span class="text-slate-300 font-sans">NX Stack Hardening</span>
+                                    <span class="text-white font-bold">83%</span>
+                                </div>
+                                <!-- Horizontal dashed progress meter -->
+                                <div class="flex gap-1 items-center" aria-hidden="true">
+                                    <span class="dash-tick bg-emerald-400"></span><span class="dash-tick bg-emerald-400"></span><span class="dash-tick bg-emerald-400"></span><span class="dash-tick bg-emerald-400"></span><span class="dash-tick bg-emerald-400"></span><span class="dash-tick bg-emerald-400"></span><span class="dash-tick bg-emerald-400"></span><span class="dash-tick bg-emerald-400"></span><span class="dash-tick bg-white/15"></span><span class="dash-tick bg-white/15"></span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-[11px] mb-1">
+                                    <span class="text-slate-300 font-sans">Secret Redaction</span>
+                                    <span class="text-white font-bold">100%</span>
+                                </div>
+                                <div class="flex gap-1 items-center" aria-hidden="true">
+                                    <span class="dash-tick bg-amber-400"></span><span class="dash-tick bg-amber-400"></span><span class="dash-tick bg-amber-400"></span><span class="dash-tick bg-amber-400"></span><span class="dash-tick bg-amber-400"></span><span class="dash-tick bg-amber-400"></span><span class="dash-tick bg-amber-400"></span><span class="dash-tick bg-amber-400"></span><span class="dash-tick bg-amber-400"></span><span class="dash-tick bg-amber-400"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-[10px] text-slate-500 font-mono pt-1 border-t border-white/5">
+                            <span>Appendix A Schema Verified</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Metric Cards -->
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-4">
-                        <p class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Images Ingested</p>
-                        <p id="stat-total-images" class="text-2xl font-bold font-mono text-white mt-1">0</p>
-                        <p class="text-[10px] text-slate-500 mt-1">SQLite repository</p>
-                    </div>
+                <!-- ROW 3: 3 LOWER FEATURE PANELS (Pink Wave Card + Amber Card + Teal Pill Bar Card) -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                    <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-4">
-                        <p class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Files Inventoried</p>
-                        <p id="stat-total-files" class="text-2xl font-bold font-mono text-cyber-cyan mt-1">0</p>
-                        <p class="text-[10px] text-slate-500 mt-1">Rootfs items</p>
-                    </div>
+                    <!-- LOWER CARD 1: VIVID PINK / ROSE WAVE CARD (Matches Cash Flow in reference) -->
+                    <div class="lg:col-span-5 glass-card-pink p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
+                        <div>
+                            <div class="flex items-center justify-between text-xs">
+                                <div>
+                                    <h3 class="text-base font-extrabold text-white tracking-tight">Vulnerabilities &amp; Triage</h3>
+                                    <p class="text-xs text-rose-200/80 mt-0.5">Categorized by Severity &amp; CWE</p>
+                                </div>
+                                <div class="flex items-center gap-3 text-xs text-rose-100 font-medium bg-black/20 px-3 py-1 rounded-full border border-white/10">
+                                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-400"></span>Critical</span>
+                                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-300"></span>High</span>
+                                </div>
+                            </div>
 
-                    <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-4">
-                        <p class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">ELFs Audited</p>
-                        <p id="stat-total-elfs" class="text-2xl font-bold font-mono text-white mt-1">0</p>
-                        <p class="text-[10px] text-slate-500 mt-1">Multi-arch binaries</p>
-                    </div>
+                            <!-- Severity Counts Banner -->
+                            <div class="grid grid-cols-4 gap-2 text-center my-4">
+                                <div class="bg-black/25 rounded-xl p-2.5 border border-white/10">
+                                    <span class="text-[10px] uppercase font-bold text-rose-200 block">Critical</span>
+                                    <span id="count-critical" class="text-xl font-extrabold font-mono text-white">0</span>
+                                </div>
+                                <div class="bg-black/25 rounded-xl p-2.5 border border-white/10">
+                                    <span class="text-[10px] uppercase font-bold text-orange-200 block">High</span>
+                                    <span id="count-high" class="text-xl font-extrabold font-mono text-white">0</span>
+                                </div>
+                                <div class="bg-black/25 rounded-xl p-2.5 border border-white/10">
+                                    <span class="text-[10px] uppercase font-bold text-amber-200 block">Medium</span>
+                                    <span id="count-medium" class="text-xl font-extrabold font-mono text-white">0</span>
+                                </div>
+                                <div class="bg-black/25 rounded-xl p-2.5 border border-white/10">
+                                    <span class="text-[10px] uppercase font-bold text-cyan-200 block">Low</span>
+                                    <span id="count-low" class="text-xl font-extrabold font-mono text-white">0</span>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-4">
-                        <p class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">NX/DEP Hardening</p>
-                        <p id="stat-nx-ratio" class="text-2xl font-bold font-mono text-cyber-neon mt-1">0%</p>
-                        <div class="w-full bg-graphite-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div id="stat-nx-bar" class="bg-cyber-neon h-full transition-all duration-500" style="width: 0%"></div>
+                        <!-- Sinusoidal Waves SVG (Inspired by Cash flow card in reference) -->
+                        <div class="w-full h-24 relative mt-2">
+                            <svg class="w-full h-full" viewBox="0 0 400 90" fill="none">
+                                <path d="M 0 45 C 70 10, 130 10, 200 45 C 270 80, 330 80, 400 45" stroke="rgba(255,255,255,0.8)" stroke-width="2" />
+                                <path d="M 0 55 C 70 25, 130 25, 200 55 C 270 85, 330 85, 400 55" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" />
+                                <path d="M 0 65 C 70 40, 130 40, 200 65 C 270 90, 330 90, 400 65" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+                            </svg>
+                        </div>
+
+                        <div class="pt-2 border-t border-white/10 flex justify-between items-center text-xs">
+                            <span class="text-rose-100 font-medium">Click to inspect in Triage Drawer</span>
+                            <button onclick="switchView('findings')" class="px-3 py-1 rounded-full bg-white text-rose-950 font-bold hover:bg-rose-50 transition text-xs">Open Triage</button>
                         </div>
                     </div>
 
-                    <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-4">
-                        <p class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Security Findings</p>
-                        <p id="stat-total-findings" class="text-2xl font-bold font-mono text-cyber-red mt-1">0</p>
-                        <p class="text-[10px] text-slate-500 mt-1">Appendix A schema</p>
+                    <!-- LOWER CARD 2: AMBER / BRONZE GLOW CARD (Matches Crypto in reference) -->
+                    <div class="lg:col-span-4 glass-card-amber p-6 sm:p-7 flex flex-col justify-between min-h-[300px]">
+                        <div>
+                            <div class="flex items-center justify-between text-xs">
+                                <div>
+                                    <h3 class="text-base font-extrabold text-white tracking-tight">Secrets &amp; Credentials</h3>
+                                    <p class="text-xs text-amber-200/80 mt-0.5">High-Entropy &amp; Sensitive Keys</p>
+                                </div>
+                                <span class="text-xs text-amber-300 font-bold px-2 py-0.5 rounded-full bg-black/25 border border-white/10">100% Redacted</span>
+                            </div>
+
+                            <div class="flex items-baseline gap-2 mt-3">
+                                <span id="stat-total-findings" class="text-3xl font-extrabold font-mono text-white">8</span>
+                                <span class="text-xs text-amber-200 font-medium">Findings Recorded</span>
+                            </div>
+
+                            <!-- Segmented Bar (Matches BTC/ETH/SOL bar in reference) -->
+                            <div class="mt-4 space-y-1">
+                                <div class="w-full h-2 rounded-full bg-black/30 overflow-hidden flex">
+                                    <div class="bg-amber-300 h-full w-[45%]" title="Hardcoded Passwords"></div>
+                                    <div class="bg-orange-400 h-full w-[35%]" title="AWS API Keys"></div>
+                                    <div class="bg-yellow-200 h-full w-[20%]" title="Shadow Hashes"></div>
+                                </div>
+                                <div class="flex justify-between text-[10px] font-mono text-amber-200/80 pt-1">
+                                    <span>PASSWORDS 45%</span>
+                                    <span>AWS 35%</span>
+                                    <span>SHADOW 20%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mini List with Sparkline Curves (Matches reference) -->
+                        <div class="space-y-2.5 font-mono text-xs my-2">
+                            <div class="flex items-center justify-between bg-black/20 p-2 rounded-xl border border-white/5">
+                                <span class="text-slate-200">AWS Access Keys</span>
+                                <svg class="w-16 h-5" viewBox="0 0 60 20" fill="none"><path d="M 0 15 Q 15 5, 30 12 T 60 4" stroke="#FDE047" stroke-width="2" /></svg>
+                                <span class="text-amber-300 font-bold">1 Hit</span>
+                            </div>
+                            <div class="flex items-center justify-between bg-black/20 p-2 rounded-xl border border-white/5">
+                                <span class="text-slate-200">Shadow Hashes</span>
+                                <svg class="w-16 h-5" viewBox="0 0 60 20" fill="none"><path d="M 0 10 Q 15 16, 30 8 T 60 14" stroke="#FB923C" stroke-width="2" /></svg>
+                                <span class="text-amber-300 font-bold">1 Hit</span>
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] font-mono text-amber-200/70 pt-2 border-t border-white/10 flex justify-between">
+                            <span>Zero Plaintext Stored</span>
+                            <span>SHA-256 Masked</span>
+                        </div>
+                    </div>
+
+                    <!-- LOWER CARD 3: EMERALD / TEAL PILL BAR CARD (Matches Stocks in reference) -->
+                    <div class="lg:col-span-3 glass-card-teal p-6 sm:p-7 flex flex-col justify-between min-h-[300px]">
+                        <div>
+                            <div class="flex items-center justify-between text-xs">
+                                <div>
+                                    <h3 class="text-base font-extrabold text-white tracking-tight">Mitigations</h3>
+                                    <p class="text-xs text-emerald-200/80 mt-0.5">Exploit Defenses</p>
+                                </div>
+                                <span class="text-xs text-emerald-300 font-bold">&uarr; 83% NX</span>
+                            </div>
+
+                            <div class="mt-3">
+                                <span class="text-3xl font-extrabold font-mono text-white">2 Binaries</span>
+                                <p class="text-xs text-emerald-200/80 mt-0.5">Cross-Architecture Audited</p>
+                            </div>
+                        </div>
+
+                        <!-- Pill Capsule Bar Chart (Matches reference Stocks bar chart) -->
+                        <div class="my-4">
+                            <div class="flex items-end justify-between h-28 px-2" aria-label="Mitigation Bars">
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <div class="w-6 h-24 rounded-full bg-white/90 shadow-[0_0_12px_rgba(255,255,255,0.4)]" title="NX / DEP: 83%"></div>
+                                    <span class="text-[10px] font-mono text-emerald-200">NX</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <div class="w-6 h-14 rounded-full bg-white/50" title="PIE / ASLR: 50%"></div>
+                                    <span class="text-[10px] font-mono text-emerald-200">PIE</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <div class="w-6 h-20 rounded-full bg-white/70" title="RELRO: 100%"></div>
+                                    <span class="text-[10px] font-mono text-emerald-200">REL</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <div class="w-6 h-14 rounded-full bg-white/50" title="Stack Canaries: 50%"></div>
+                                    <span class="text-[10px] font-mono text-emerald-200">CAN</span>
+                                </div>
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <!-- Highlighted active pill bar in electric lime matching reference -->
+                                    <div class="w-6 h-26 rounded-full bg-cyber-neon shadow-[0_0_14px_#00FF9D]" title="Overall Hardening"></div>
+                                    <span class="text-[10px] font-mono text-white font-bold">ALL</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-white/10 flex justify-between items-center text-xs">
+                            <span class="text-emerald-100 font-medium">Per-binary Matrix</span>
+                            <button onclick="switchView('mitigation')" class="px-3 py-1 rounded-full bg-white text-emerald-950 font-bold hover:bg-emerald-50 transition text-xs">Inspect</button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Two-Column Layout -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Recent Analysis History -->
-                    <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-5 space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-xs font-bold font-mono uppercase text-slate-300 tracking-wider">Recent Ingestion Activity</h3>
-                            <span class="text-[10px] font-mono text-slate-500">Live Database Feed</span>
+                <!-- RECENT ACTIVITY TABLE (SQLite Events) -->
+                <div class="glass-panel p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-white">Recent Firmware Ingestion History</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Audited records from SQLite metadata repository</p>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs font-mono">
-                                <thead class="bg-graphite-950 text-slate-400 border-b border-graphite-700/60">
-                                    <tr>
-                                        <th class="p-2.5">Image File</th>
-                                        <th class="p-2.5">SHA-256</th>
-                                        <th class="p-2.5">Status</th>
-                                        <th class="p-2.5">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="recent-firmware-tbody" class="divide-y divide-graphite-800 text-slate-300">
-                                    <tr><td colspan="4" class="p-4 text-center text-slate-500">No firmware images recorded in SQLite repository.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        <button onclick="loadFirmwareList()" class="text-xs font-mono text-cyan-400 hover:underline">Reload</button>
                     </div>
 
-                    <!-- Severity & Posture Telemetry -->
-                    <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-5 space-y-4">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-xs font-bold font-mono uppercase text-slate-300 tracking-wider">Triage Severity Telemetry</h3>
-                            <span class="text-[10px] font-mono text-slate-500">CWE Classification</span>
-                        </div>
-                        <div class="space-y-3 font-mono text-xs">
-                            <div class="flex justify-between items-center p-2 rounded bg-graphite-950 border border-red-900/30">
-                                <span class="text-red-400 font-bold flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-500"></span>CRITICAL</span>
-                                <span id="count-critical" class="font-bold text-white">0</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 rounded bg-graphite-950 border border-orange-900/30">
-                                <span class="text-orange-400 font-bold flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-orange-500"></span>HIGH</span>
-                                <span id="count-high" class="font-bold text-white">0</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 rounded bg-graphite-950 border border-amber-900/30">
-                                <span class="text-amber-400 font-bold flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-500"></span>MEDIUM</span>
-                                <span id="count-medium" class="font-bold text-white">0</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 rounded bg-graphite-950 border border-cyan-900/30">
-                                <span class="text-cyan-400 font-bold flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-500"></span>LOW</span>
-                                <span id="count-low" class="font-bold text-white">0</span>
-                            </div>
-                        </div>
+                    <div class="overflow-x-auto rounded-2xl border border-white/10">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead class="bg-white/5 text-slate-400 border-b border-white/10 uppercase text-[10px]">
+                                <tr>
+                                    <th class="p-3">Firmware Image</th>
+                                    <th class="p-3">SHA-256 Digest</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-firmware-tbody" class="divide-y divide-white/5 text-slate-200">
+                                <tr><td colspan="4" class="p-4 text-center text-slate-500">Querying repository...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+
             </section>
 
-            <!-- ==================== VIEW 2: FIRMWARE INGESTION ==================== -->
+            <!-- ==================== VIEW 2: FIRMWARE INGESTION PORTAL ==================== -->
             <section id="view-analysis" class="view-panel hidden space-y-6">
-                <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-6 shadow-sm space-y-4">
+                <div class="glass-panel p-8 space-y-6">
                     <div>
-                        <h2 class="text-sm font-bold font-mono uppercase text-white tracking-wider flex items-center gap-2">
-                            <svg class="w-4 h-4 text-cyber-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                            Secure Firmware Ingestion Pipeline
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-1">
-                            Supported archive containers: <code class="text-cyan-300 font-mono">.zip, .tar, .tar.gz, .tgz, .tar.bz2, .tar.xz</code> (Max upload: 500 MB). Enforces Zip Slip defense, symlink boundaries, and decompression quotas.
-                        </p>
+                        <h2 class="text-lg font-extrabold text-white">Firmware Ingestion &amp; Safe Spooling</h2>
+                        <p class="text-xs text-slate-400 mt-1">Accepts standard archives (.zip, .tar, .tar.gz, .tgz, .tar.bz2, .tar.xz) and raw firmware containers.</p>
                     </div>
 
                     <form id="uploadForm" class="space-y-4">
-                        <div id="dropArea" class="border-2 border-dashed border-graphite-700 hover:border-cyan-500/80 rounded-xl p-8 text-center cursor-pointer transition bg-graphite-950">
-                            <input type="file" id="firmwareFile" class="hidden" accept=".zip,.tar,.gz,.tgz,.bz2,.xz,.bin,.img" required />
-                            <div class="flex flex-col items-center justify-center space-y-3">
-                                <div class="w-12 h-12 rounded-xl bg-graphite-900 border border-graphite-700 flex items-center justify-center text-cyan-400">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                                </div>
-                                <p id="fileLabel" class="text-sm font-medium text-slate-200">Drag & drop firmware archive here, or browse files</p>
-                                <p class="text-[11px] font-mono text-slate-500">SHA-256 digest computed automatically on upload</p>
-                            </div>
+                        <!-- Drop Area -->
+                        <div id="dropArea" class="border-2 border-dashed border-white/15 hover:border-cyan-400/60 rounded-3xl p-10 text-center cursor-pointer transition bg-white/[0.02] hover:bg-white/[0.04]">
+                            <svg class="w-12 h-12 mx-auto text-slate-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <p class="text-sm font-semibold text-slate-200">Drag &amp; drop firmware image here, or <span class="text-cyan-400 underline">browse</span></p>
+                            <p class="text-xs text-slate-500 mt-1">Supports up to 500 MB per image. Path traversal and Zip-Slip prevented.</p>
+                            <input type="file" id="firmwareFile" name="file" class="hidden" />
                         </div>
 
-                        <div class="flex justify-between items-center pt-2">
-                            <div id="uploadFeedback" class="text-xs font-mono text-slate-400"></div>
-                            <button type="submit" id="submitBtn" class="bg-cyan-500 hover:bg-cyan-400 text-graphite-950 font-mono font-bold text-xs px-5 py-2.5 rounded-lg transition disabled:opacity-50 flex items-center gap-2">
-                                <span id="btnSpinner" class="hidden animate-spin rounded-full h-3.5 w-3.5 border-2 border-graphite-950 border-t-transparent"></span>
-                                <span id="btnText">Ingest & Run Pipeline</span>
+                        <div class="flex items-center justify-between">
+                            <span id="selectedFileName" class="text-xs font-mono text-cyan-300">No file staged</span>
+                            <button type="submit" id="submitBtn" class="px-6 py-2.5 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs transition flex items-center gap-2 shadow-lg shadow-cyan-500/20">
+                                <span id="btnText">Ingest &amp; Run Pipeline</span>
+                                <svg id="btnSpinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
                             </button>
                         </div>
                     </form>
 
-                    <!-- Real-time Terminal Log Feed -->
-                    <div id="terminal-feed" class="bg-graphite-950 border border-graphite-700/60 rounded-lg p-4 font-mono text-[11px] space-y-1 text-slate-400 max-h-48 overflow-y-auto">
-                        <div class="text-cyan-400/80 font-bold">[READY] Sandboxed ingestion portal ready for archive upload.</div>
+                    <!-- Real-Time Terminal Log Feed -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-xs text-slate-400">
+                            <span class="font-mono uppercase font-bold tracking-wider">Analysis Telemetry Stream</span>
+                            <span class="text-emerald-400 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>Active</span>
+                        </div>
+                        <div id="terminal-feed" class="p-4 bg-black/50 border border-white/10 rounded-2xl font-mono text-xs text-emerald-400/90 h-44 overflow-y-auto space-y-1">
+                            <div class="text-slate-500">// FirmwareX ingestion engine ready. Awaiting payload.</div>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- ==================== VIEW 3: FILESYSTEM EXPLORER ==================== -->
-            <section id="view-filesystem" class="view-panel hidden space-y-4">
-                <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-5 space-y-4">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <section id="view-filesystem" class="view-panel hidden space-y-6">
+                <div class="glass-panel p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div>
-                            <h2 class="text-sm font-bold font-mono uppercase text-white tracking-wider">Rootfs File Inventory</h2>
-                            <p class="text-xs text-slate-400 mt-0.5">Extracted file paths, classifications, sizes, and SHA-256 digests</p>
+                            <h2 class="text-base font-bold text-white uppercase tracking-wider">Extracted Rootfs File Inventory</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Canonical relative paths, file types, sizes, and SHA-256 digests</p>
                         </div>
-                        <div class="flex items-center gap-3 w-full md:w-auto">
-                            <input type="text" id="fs-search" placeholder="Search path or filename..." oninput="filterFilesystem()" class="bg-graphite-950 text-xs font-mono text-slate-200 border border-graphite-700 rounded-lg px-3 py-1.5 focus:border-cyan-500 focus:outline-none w-full md:w-64" />
-                            <select id="fs-type-filter" onchange="filterFilesystem()" class="bg-graphite-950 text-xs font-mono text-slate-200 border border-graphite-700 rounded-lg px-3 py-1.5 focus:border-cyan-500 focus:outline-none">
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="fs-search" placeholder="Search path or filename..." oninput="filterFilesystem()" class="bg-white/5 border border-white/10 text-xs font-mono text-slate-200 rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-48 sm:w-64" />
+                            <select id="fs-type-filter" onchange="filterFilesystem()" class="bg-white/5 border border-white/10 text-xs font-mono text-slate-200 rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                                 <option value="">All Types</option>
                                 <option value="elf_binary">ELF Binaries</option>
+                                <option value="configuration">Configurations</option>
                                 <option value="script">Scripts</option>
-                                <option value="configuration">Configuration</option>
-                                <option value="certificate_or_key">Certs / Keys</option>
-                                <option value="text">Text Files</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto max-h-[600px] border border-graphite-800 rounded-lg">
+                    <div class="overflow-x-auto rounded-2xl border border-white/10 max-h-[600px]">
                         <table class="w-full text-left text-xs font-mono">
-                            <thead class="bg-graphite-950 text-slate-400 border-b border-graphite-700/60 sticky top-0">
+                            <thead class="bg-white/5 text-slate-400 border-b border-white/10 uppercase text-[10px] sticky top-0 backdrop-blur-md">
                                 <tr>
-                                    <th class="p-3">Path</th>
+                                    <th class="p-3">Relative Path</th>
                                     <th class="p-3">Type</th>
                                     <th class="p-3">Size (Bytes)</th>
-                                    <th class="p-3">SHA-256 Digest</th>
+                                    <th class="p-3">SHA-256 Hash</th>
                                 </tr>
                             </thead>
-                            <tbody id="fs-tbody" class="divide-y divide-graphite-800 text-slate-300">
-                                <tr><td colspan="4" class="p-6 text-center text-slate-500">No firmware loaded. Please ingest an image first.</td></tr>
+                            <tbody id="fs-tbody" class="divide-y divide-white/5 text-slate-200">
+                                <tr><td colspan="4" class="p-6 text-center text-slate-500">Select an analyzed firmware image to inspect its rootfs.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -354,76 +791,72 @@
             </section>
 
             <!-- ==================== VIEW 4: BINARY MITIGATION MATRIX ==================== -->
-            <section id="view-mitigation" class="view-panel hidden space-y-4">
-                <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-5 space-y-4">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <section id="view-mitigation" class="view-panel hidden space-y-6">
+                <div class="glass-panel p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div>
-                            <h2 class="text-sm font-bold font-mono uppercase text-white tracking-wider">Binary Hardening Matrix &amp; Mitigations</h2>
+                            <h2 class="text-base font-bold text-white uppercase tracking-wider">Binary Hardening Matrix &amp; Mitigations</h2>
                             <p class="text-xs text-slate-400 mt-0.5">Audited via PT_GNU_STACK, ET_DYN, PT_GNU_RELRO, and symbol resolution</p>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <input type="text" id="bm-search" placeholder="Search binary name..." oninput="filterMitigations()" class="bg-graphite-950 text-xs font-mono text-slate-200 border border-graphite-700 rounded-lg px-3 py-1.5 focus:border-cyan-500 focus:outline-none w-56" />
-                        </div>
+                        <input type="text" id="bm-search" placeholder="Search binary name..." oninput="filterMitigations()" class="bg-white/5 border border-white/10 text-xs font-mono text-slate-200 rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-48 sm:w-64" />
                     </div>
 
-                    <div class="overflow-x-auto max-h-[600px] border border-graphite-800 rounded-lg">
+                    <div class="overflow-x-auto rounded-2xl border border-white/10 max-h-[600px]">
                         <table class="w-full text-left text-xs font-mono">
-                            <thead class="bg-graphite-950 text-slate-400 border-b border-graphite-700/60 sticky top-0">
+                            <thead class="bg-white/5 text-slate-400 border-b border-white/10 uppercase text-[10px] sticky top-0 backdrop-blur-md">
                                 <tr>
-                                    <th class="p-3">Binary File</th>
-                                    <th class="p-3">Arch / Bits</th>
-                                    <th class="p-3">ELF Type</th>
-                                    <th class="p-3">NX / DEP</th>
-                                    <th class="p-3">PIE / ASLR</th>
+                                    <th class="p-3">Binary Asset</th>
+                                    <th class="p-3">Arch</th>
+                                    <th class="p-3">NX/DEP</th>
+                                    <th class="p-3">PIE</th>
                                     <th class="p-3">RELRO</th>
                                     <th class="p-3">Canary</th>
-                                    <th class="p-3">FORTIFY</th>
+                                    <th class="p-3">Fortify</th>
                                     <th class="p-3">Sinks</th>
                                 </tr>
                             </thead>
-                            <tbody id="bm-tbody" class="divide-y divide-graphite-800 text-slate-300">
-                                <tr><td colspan="9" class="p-6 text-center text-slate-500">No binaries audited yet.</td></tr>
+                            <tbody id="bm-tbody" class="divide-y divide-white/5 text-slate-200">
+                                <tr><td colspan="8" class="p-6 text-center text-slate-500">Select an analyzed firmware image to inspect binary mitigations.</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
-            <!-- ==================== VIEW 5: FINDINGS & INVESTIGATION ==================== -->
-            <section id="view-findings" class="view-panel hidden space-y-4">
-                <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-5 space-y-4">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <!-- ==================== VIEW 5: FINDINGS & TRIAGE ==================== -->
+            <section id="view-findings" class="view-panel hidden space-y-6">
+                <div class="glass-panel p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div>
-                            <h2 class="text-sm font-bold font-mono uppercase text-white tracking-wider">Findings Triage & Investigation</h2>
-                            <p class="text-xs text-slate-400 mt-0.5">PRD Appendix A normalized vulnerability records with CWE mapping</p>
+                            <h2 class="text-base font-bold text-white uppercase tracking-wider">Normalized Vulnerabilities &amp; Triage</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Conforms strictly to PRD Appendix A Finding Schema</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <select id="findings-sev-filter" onchange="filterFindings()" class="bg-graphite-950 text-xs font-mono text-slate-200 border border-graphite-700 rounded-lg px-3 py-1.5 focus:border-cyan-500 focus:outline-none">
+                            <select id="findings-sev-filter" onchange="filterFindings()" class="bg-white/5 border border-white/10 text-xs font-mono text-slate-200 rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500">
                                 <option value="">All Severities</option>
                                 <option value="critical">Critical</option>
                                 <option value="high">High</option>
                                 <option value="medium">Medium</option>
                                 <option value="low">Low</option>
                             </select>
-                            <input type="text" id="findings-search" placeholder="Search CWE, category, file..." oninput="filterFindings()" class="bg-graphite-950 text-xs font-mono text-slate-200 border border-graphite-700 rounded-lg px-3 py-1.5 focus:border-cyan-500 focus:outline-none w-56" />
+                            <input type="text" id="findings-search" placeholder="Search CWE, category, file..." oninput="filterFindings()" class="bg-white/5 border border-white/10 text-xs font-mono text-slate-200 rounded-full px-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-48 sm:w-64" />
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto max-h-[600px] border border-graphite-800 rounded-lg">
+                    <div class="overflow-x-auto rounded-2xl border border-white/10 max-h-[600px]">
                         <table class="w-full text-left text-xs font-mono">
-                            <thead class="bg-graphite-950 text-slate-400 border-b border-graphite-700/60 sticky top-0">
+                            <thead class="bg-white/5 text-slate-400 border-b border-white/10 uppercase text-[10px] sticky top-0 backdrop-blur-md">
                                 <tr>
                                     <th class="p-3">Severity</th>
-                                    <th class="p-3">CWE</th>
+                                    <th class="p-3">CWE ID</th>
+                                    <th class="p-3">Affected Asset</th>
                                     <th class="p-3">Category</th>
-                                    <th class="p-3">Target Asset</th>
                                     <th class="p-3">Confidence</th>
-                                    <th class="p-3">Evidence Preview (Redacted)</th>
-                                    <th class="p-3 text-right">Action</th>
+                                    <th class="p-3">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="findings-tbody" class="divide-y divide-graphite-800 text-slate-300">
-                                <tr><td colspan="7" class="p-6 text-center text-slate-500">No findings detected or no firmware loaded.</td></tr>
+                            <tbody id="findings-tbody" class="divide-y divide-white/5 text-slate-200">
+                                <tr><td colspan="6" class="p-6 text-center text-slate-500">No security findings recorded for active image.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -432,19 +865,19 @@
 
             <!-- ==================== VIEW 6: REPORTS & EXPORT ==================== -->
             <section id="view-reports" class="view-panel hidden space-y-6">
-                <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-6 space-y-4">
-                    <div class="flex justify-between items-center">
+                <div class="glass-panel p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div>
-                            <h2 class="text-sm font-bold font-mono uppercase text-white tracking-wider">JSON Vulnerability Report Export</h2>
-                            <p class="text-xs text-slate-400 mt-1">Export verifiable, CWE-classified analysis report conforming to PRD Appendix A schema.</p>
+                            <h2 class="text-base font-bold text-white uppercase tracking-wider">Auditable Security Reports</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Download or inspect raw JSON payloads conforming to PRD Appendix A</p>
                         </div>
-                        <a id="rep-download-btn" href="#" target="_blank" class="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-graphite-950 font-mono font-bold text-xs flex items-center gap-2 transition">
+                        <a id="rep-download-btn" href="#" target="_blank" class="px-5 py-2 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs transition flex items-center gap-2 shadow-lg shadow-cyan-500/20">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            Download Report (.json)
+                            <span>Download JSON Report</span>
                         </a>
                     </div>
 
-                    <div class="bg-graphite-950 border border-graphite-700/60 rounded-lg p-4 font-mono text-xs text-slate-300 max-h-96 overflow-y-auto">
+                    <div class="rounded-2xl border border-white/10 p-4 bg-black/60 font-mono text-xs text-slate-300 max-h-[500px] overflow-y-auto">
                         <pre id="rep-json-preview">// Select a firmware image or click Download to inspect raw payload.</pre>
                     </div>
                 </div>
@@ -452,48 +885,48 @@
 
             <!-- ==================== VIEW 7: SYSTEM & TELEMETRY ==================== -->
             <section id="view-system" class="view-panel hidden space-y-6">
-                <div class="bg-graphite-900 border border-graphite-700/60 rounded-xl p-6 space-y-5">
-                    <h2 class="text-sm font-bold font-mono uppercase text-white tracking-wider">System Specifications & Containment Guardrails</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
-                        <div class="bg-graphite-950 border border-graphite-700/60 rounded-lg p-4 space-y-2">
-                            <p class="text-slate-400 font-bold uppercase">Runtime Host Environment</p>
-                            <div class="flex justify-between"><span class="text-slate-500">Engine Version:</span><span class="text-slate-200">FirmwareX v0.1.0</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Python Runtime:</span><span class="text-slate-200">Python 3.14.6 (64-bit)</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Host Binding:</span><span class="text-slate-200">127.0.0.1 (Loopback Only)</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Persistence Store:</span><span class="text-slate-200">SQLite (firmwarex.db)</span></div>
+                <div class="glass-panel p-6 space-y-6">
+                    <div>
+                        <h2 class="text-base font-bold text-white uppercase tracking-wider">System Specifications &amp; Containment Guardrails</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Audited runtime controls, container isolation, and safety boundaries</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+                            <p class="text-slate-400 font-bold uppercase text-[11px]">Runtime Host</p>
+                            <div class="flex justify-between"><span class="text-slate-500">Engine:</span><span class="text-white">FirmwareX v0.1.0</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Python:</span><span class="text-white">3.14.6 (64-bit)</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Binding:</span><span class="text-cyan-400">127.0.0.1:8080</span></div>
                         </div>
 
-                        <div class="bg-graphite-950 border border-graphite-700/60 rounded-lg p-4 space-y-2">
-                            <p class="text-slate-400 font-bold uppercase">Containment Safety Quotas</p>
-                            <div class="flex justify-between"><span class="text-slate-500">Max Upload Size:</span><span class="text-slate-200">500 MB</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Max Uncompressed Rootfs:</span><span class="text-slate-200">1,024 MB</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Max Archive Files:</span><span class="text-slate-200">10,000 files</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Nesting Depth Ceiling:</span><span class="text-slate-200">3 layers</span></div>
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+                            <p class="text-slate-400 font-bold uppercase text-[11px]">Safety Quotas</p>
+                            <div class="flex justify-between"><span class="text-slate-500">Max Upload:</span><span class="text-white">500 MB</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Max Rootfs:</span><span class="text-white">1,024 MB</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Max Files:</span><span class="text-white">10,000 files</span></div>
                         </div>
 
-                        <div class="bg-graphite-950 border border-graphite-700/60 rounded-lg p-4 space-y-2">
-                            <p class="text-cyan-400 font-bold uppercase">Container Preflight &amp; Isolation</p>
-                            <div class="flex justify-between"><span class="text-slate-500">Docker Daemon:</span><span class="text-cyber-neon">Active (v29.9.2)</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Network Egress:</span><span class="text-cyber-neon">DENIED (--network none)</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Host Execution:</span><span class="text-cyber-neon">BLOCKED (0 Host Binaries Spawned)</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Sandbox Mounts:</span><span class="text-slate-200">Strictly Scoped (data/sandboxes/)</span></div>
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+                            <p class="text-cyan-400 font-bold uppercase text-[11px]">Container Sandbox</p>
+                            <div class="flex justify-between"><span class="text-slate-500">Docker:</span><span class="text-emerald-400">Active (v29.9.2)</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Network:</span><span class="text-emerald-400">--network none</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Host Exec:</span><span class="text-emerald-400">BLOCKED (0 Host)</span></div>
                         </div>
 
-                        <div class="bg-graphite-950 border border-graphite-700/60 rounded-lg p-4 space-y-2">
-                            <p class="text-amber-400 font-bold uppercase">Analysis Engines &amp; Tooling</p>
-                            <div class="flex justify-between"><span class="text-slate-500">Raw Format Signatures:</span><span class="text-slate-200">SquashFS, CramFS, JFFS2, UBIFS, TRX, uImage</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">QEMU User-Mode:</span><span class="text-slate-200">MIPS, ARM, AArch64, x86_64</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Symbolic Analysis:</span><span class="text-slate-200">Static Taint Reachability v1.0</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">angr Availability:</span><span class="text-slate-400">Unavailable on Py3.14 Win (Clean Fallback)</span></div>
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+                            <p class="text-amber-400 font-bold uppercase text-[11px]">Analysis Engines</p>
+                            <div class="flex justify-between"><span class="text-slate-500">Signatures:</span><span class="text-white">SquashFS, UBIFS, TRX</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">QEMU User:</span><span class="text-white">MIPS, ARM, x86</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Symbolic:</span><span class="text-white">Static Taint v1.0</span></div>
                         </div>
                     </div>
 
-                    <div class="bg-graphite-950 border border-graphite-700/60 rounded-lg p-4 text-xs font-mono text-slate-400 space-y-1">
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-mono text-slate-300 space-y-1.5">
                         <p class="text-cyan-400 font-bold">DEFENSIVE SAFETY GUARANTEES:</p>
-                        <p>1. Untrusted guest ELF binaries are never executed directly on the host operating system.</p>
+                        <p>1. Untrusted guest ELF binaries are strictly forbidden from execution on the Windows host operating system.</p>
                         <p>2. Decompression routines canonicalize destination paths to block Zip Slip and symlink escapes.</p>
                         <p>3. Raw private keys and credentials are cryptographically masked and stored only as SHA-256 fingerprints.</p>
+                        <p>4. Dynamic execution and emulation are guarded by fail-closed isolation preflights.</p>
                     </div>
                 </div>
             </section>
@@ -501,62 +934,60 @@
     </div>
 
     <!-- ==================== SLIDE-OVER INVESTIGATION DRAWER ==================== -->
-    <div id="drawer-backdrop" onclick="closeDrawer()" class="hidden fixed inset-0 bg-black/60 z-30 transition-opacity"></div>
-    <div id="investigation-drawer" class="fixed top-0 right-0 w-full max-w-xl h-full bg-graphite-900 border-l border-graphite-700 z-40 transform translate-x-full transition-transform duration-300 flex flex-col justify-between p-6 overflow-y-auto">
+    <div id="drawer-backdrop" onclick="closeDrawer()" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-30 transition-opacity"></div>
+    <div id="investigation-drawer" class="fixed top-0 right-0 w-full max-w-xl h-full glass-panel border-l border-white/15 z-40 transform translate-x-full transition-transform duration-300 flex flex-col justify-between p-6 overflow-y-auto">
         <div class="space-y-4">
-            <div class="flex justify-between items-start border-b border-graphite-700/60 pb-4">
+            <div class="flex justify-between items-start border-b border-white/10 pb-4">
                 <div>
-                    <span id="drawer-sev-badge" class="px-2 py-0.5 rounded text-[11px] font-mono font-bold sev-high">HIGH</span>
-                    <h3 id="drawer-cwe" class="text-base font-bold font-mono text-white mt-2">CWE-798</h3>
+                    <span id="drawer-sev-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">HIGH</span>
+                    <h3 id="drawer-cwe" class="text-lg font-bold font-mono text-white mt-2">CWE-798</h3>
                 </div>
-                <button onclick="closeDrawer()" class="text-slate-400 hover:text-white p-1 rounded-lg bg-graphite-800 border border-graphite-700">
+                <button onclick="closeDrawer()" class="text-slate-400 hover:text-white p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
             <div class="space-y-3 font-mono text-xs">
                 <div>
-                    <span class="text-slate-500 uppercase block text-[10px]">Vulnerability UUID:</span>
-                    <span id="drawer-vuln-id" class="text-slate-300 select-all"></span>
+                    <span class="text-slate-400 uppercase block text-[10px]">Vulnerability UUID:</span>
+                    <span id="drawer-vuln-id" class="text-slate-200 select-all"></span>
                 </div>
                 <div>
-                    <span class="text-slate-500 uppercase block text-[10px]">Affected Asset:</span>
+                    <span class="text-slate-400 uppercase block text-[10px]">Affected Asset:</span>
                     <span id="drawer-binary" class="text-cyan-300 font-bold select-all"></span>
                 </div>
                 <div>
-                    <span class="text-slate-500 uppercase block text-[10px]">Category & Confidence:</span>
-                    <span id="drawer-cat-conf" class="text-slate-300"></span>
+                    <span class="text-slate-400 uppercase block text-[10px]">Category &amp; Confidence:</span>
+                    <span id="drawer-cat-conf" class="text-slate-200"></span>
                 </div>
                 <div>
-                    <span class="text-slate-500 uppercase block text-[10px]">Redacted Preview:</span>
-                    <div id="drawer-preview" class="p-3 bg-graphite-950 border border-graphite-800 rounded text-amber-300 select-all"></div>
+                    <span class="text-slate-400 uppercase block text-[10px]">Redacted Preview:</span>
+                    <div id="drawer-preview" class="p-3 bg-black/60 border border-white/10 rounded-xl text-amber-300 select-all"></div>
                 </div>
                 <div>
-                    <span class="text-slate-500 uppercase block text-[10px]">Evidence Hash / Fingerprint:</span>
+                    <span class="text-slate-400 uppercase block text-[10px]">Evidence Hash / Fingerprint:</span>
                     <span id="drawer-evidence-ref" class="text-slate-400 text-[11px] select-all"></span>
                 </div>
                 <div>
-                    <span class="text-slate-500 uppercase block text-[10px]">Diagnostic Crash State:</span>
-                    <div id="drawer-crash-state" class="p-2.5 bg-graphite-950 border border-graphite-800 rounded text-slate-400 text-[11px]"></div>
+                    <span class="text-slate-400 uppercase block text-[10px]">Diagnostic Crash State:</span>
+                    <div id="drawer-crash-state" class="p-2.5 bg-black/60 border border-white/10 rounded-xl text-slate-400 text-[11px]"></div>
                 </div>
                 <div>
-                    <span class="text-slate-500 uppercase block text-[10px]">Analyst Investigation Notes:</span>
-                    <p id="drawer-notes" class="text-slate-300 leading-relaxed font-sans text-xs bg-graphite-850 p-3 rounded border border-graphite-700/60"></p>
+                    <span class="text-slate-400 uppercase block text-[10px]">Analyst Investigation Notes:</span>
+                    <p id="drawer-notes" class="text-slate-200 leading-relaxed font-sans text-xs bg-white/5 p-3 rounded-xl border border-white/10"></p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== SOC COMMAND CENTER JAVASCRIPT ==================== -->
+    <!-- ==================== REACTIVE JAVASCRIPT STATE ENGINE ==================== -->
     <script>
-        // Global Reactive State
         let currentFirmwareId = null;
         let allFirmwares = [];
         let currentInventory = [];
         let currentMitigations = [];
         let currentFindings = [];
 
-        // Safe HTML String Escape
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)
@@ -567,27 +998,23 @@
                 .replace(/'/g, '&#039;');
         }
 
-        // View Navigation
         function switchView(viewId) {
             document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
             const targetView = document.getElementById(`view-${viewId}`);
             if (targetView) targetView.classList.remove('hidden');
 
-            document.querySelectorAll('.nav-item').forEach(btn => {
-                btn.classList.remove('bg-graphite-800', 'text-white', 'border-cyan-500/30', 'border');
-                btn.classList.add('text-slate-400');
+            document.querySelectorAll('nav .pill-btn').forEach(btn => {
+                btn.classList.remove('pill-btn-active');
+                btn.classList.add('pill-btn-inactive');
             });
 
             const activeBtn = document.getElementById(`nav-${viewId}`);
             if (activeBtn) {
-                activeBtn.classList.add('bg-graphite-800', 'text-white', 'border-cyan-500/30', 'border');
-                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.remove('pill-btn-inactive');
+                activeBtn.classList.add('pill-btn-active');
             }
-
-            document.getElementById('breadcrumb-current').textContent = viewId.replace('-', ' ');
         }
 
-        // Initial Boot
         document.addEventListener('DOMContentLoaded', async () => {
             await loadFirmwareList();
         });
@@ -599,7 +1026,6 @@
             }
         }
 
-        // Fetch Firmware List from Backend
         async function loadFirmwareList() {
             try {
                 const res = await fetch('/api/v1/firmware');
@@ -609,7 +1035,6 @@
 
                 document.getElementById('stat-total-images').textContent = allFirmwares.length;
 
-                // Populate Dropdown
                 const select = document.getElementById('active-firmware-select');
                 select.innerHTML = '';
 
@@ -628,7 +1053,6 @@
 
                 renderRecentTable(allFirmwares);
 
-                // Auto-select first/latest if none selected
                 if (!currentFirmwareId && allFirmwares.length > 0) {
                     currentFirmwareId = allFirmwares[0].id;
                     select.value = currentFirmwareId;
@@ -655,20 +1079,19 @@
             tbody.innerHTML = '';
             list.slice(0, 5).forEach(fw => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-graphite-850 transition';
+                tr.className = 'hover:bg-white/5 transition';
                 tr.innerHTML = `
-                    <td class="p-2.5 font-bold text-white">${escapeHtml(fw.filename)}</td>
-                    <td class="p-2.5 text-slate-400 text-[11px]">${escapeHtml(fw.sha256.substring(0, 16))}...</td>
-                    <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] status-enabled">${escapeHtml(fw.status)}</span></td>
-                    <td class="p-2.5">
-                        <button onclick="onSelectFirmware('${fw.id}')" class="text-cyber-cyan hover:underline text-[11px]">Load</button>
+                    <td class="p-3 font-bold text-white">${escapeHtml(fw.filename)}</td>
+                    <td class="p-3 text-slate-400 text-[11px]">${escapeHtml(fw.sha256.substring(0, 16))}...</td>
+                    <td class="p-3"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">${escapeHtml(fw.status)}</span></td>
+                    <td class="p-3">
+                        <button onclick="onSelectFirmware('${fw.id}')" class="text-cyan-400 hover:text-cyan-300 font-bold hover:underline text-xs">Load</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Load Complete Firmware Details for Active Image
         async function loadFirmwareDetails(firmwareId) {
             try {
                 // 1. Ingest metadata
@@ -677,7 +1100,7 @@
                 const fw = await fwRes.json();
 
                 document.getElementById('ov-filename').textContent = fw.filename;
-                document.getElementById('ov-sha256').textContent = fw.sha256;
+                document.getElementById('ov-sha256').textContent = fw.sha256.substring(0, 16) + '...';
                 document.getElementById('ov-status-pill').textContent = fw.status.toUpperCase();
                 document.getElementById('ov-report-btn').href = `/api/v1/firmware/${firmwareId}/report`;
                 document.getElementById('rep-download-btn').href = `/api/v1/firmware/${firmwareId}/report`;
@@ -698,7 +1121,14 @@
                 
                 const nxRatio = summary.total_binaries > 0 ? Math.round((summary.nx_enabled / summary.total_binaries) * 100) : 0;
                 document.getElementById('stat-nx-ratio').textContent = `${nxRatio}%`;
-                document.getElementById('stat-nx-bar').style.width = `${nxRatio}%`;
+                document.getElementById('gauge-nx-pct').textContent = `${nxRatio}%`;
+
+                const pieRatio = summary.total_binaries > 0 ? Math.round((summary.pie_enabled / summary.total_binaries) * 100) : 0;
+                document.getElementById('gauge-pie-pct').textContent = `${pieRatio}%`;
+
+                const canRatio = summary.total_binaries > 0 ? Math.round((summary.canary_enabled / summary.total_binaries) * 100) : 0;
+                document.getElementById('gauge-canary-pct').textContent = `${canRatio}%`;
+
                 renderMitigationTable(currentMitigations);
 
                 // 4. Vulnerabilities & Findings
@@ -706,10 +1136,11 @@
                 const vulnsData = await vulnsRes.json();
                 currentFindings = vulnsData.findings || [];
 
-                document.getElementById('stat-total-findings').textContent = currentFindings.length;
-                document.getElementById('badge-total-findings').textContent = currentFindings.length;
+                const findingsCount = currentFindings.length;
+                document.getElementById('stat-total-findings').textContent = findingsCount;
+                document.getElementById('badge-total-findings').textContent = findingsCount;
+                document.getElementById('hero-findings-metric').textContent = String(findingsCount).padStart(3, '0');
 
-                // Tally severity telemetry
                 let cCrit = 0, cHigh = 0, cMed = 0, cLow = 0;
                 currentFindings.forEach(f => {
                     const r = (f.risk_rating || '').toLowerCase();
@@ -722,6 +1153,7 @@
                 document.getElementById('count-high').textContent = cHigh;
                 document.getElementById('count-medium').textContent = cMed;
                 document.getElementById('count-low').textContent = cLow;
+                document.getElementById('hero-critical-badge').textContent = `${cCrit} Critical + ${cHigh} High`;
 
                 renderFindingsTable(currentFindings);
 
@@ -735,7 +1167,6 @@
             }
         }
 
-        // Render Filesystem
         function renderFilesystemTable(items) {
             const tbody = document.getElementById('fs-tbody');
             if (items.length === 0) {
@@ -745,93 +1176,98 @@
             tbody.innerHTML = '';
             items.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-graphite-850 transition';
+                tr.className = 'hover:bg-white/5 transition';
                 tr.innerHTML = `
                     <td class="p-3 font-semibold text-slate-200">${escapeHtml(item.path)}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] bg-graphite-800 text-cyan-400 border border-graphite-700">${escapeHtml(item.type)}</span></td>
-                    <td class="p-3 text-slate-400">${item.size_bytes ? item.size_bytes.toLocaleString() : 0}</td>
-                    <td class="p-3 text-slate-400 text-[11px] select-all">${item.sha256 ? escapeHtml(item.sha256) : '-'}</td>
+                    <td class="p-3 text-slate-400">${escapeHtml(item.type)}</td>
+                    <td class="p-3 text-slate-300 font-mono">${(item.size || 0).toLocaleString()}</td>
+                    <td class="p-3 text-slate-400 font-mono text-[11px]">${escapeHtml((item.sha256 || '-').substring(0, 16))}...</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
         function filterFilesystem() {
-            const query = (document.getElementById('fs-search').value || '').toLowerCase();
+            const q = document.getElementById('fs-search').value.toLowerCase();
             const typeFilter = document.getElementById('fs-type-filter').value;
             const filtered = currentInventory.filter(item => {
-                const matchQ = (item.path || '').toLowerCase().includes(query);
-                const matchType = !typeFilter || item.type === typeFilter;
-                return matchQ && matchType;
+                const matchesQ = (item.path || '').toLowerCase().includes(q);
+                const matchesType = !typeFilter || item.type === typeFilter;
+                return matchesQ && matchesType;
             });
             renderFilesystemTable(filtered);
         }
 
-        // Render Mitigations
         function renderMitigationTable(binaries) {
             const tbody = document.getElementById('bm-tbody');
             if (binaries.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-slate-500">No ELF binaries found in rootfs.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-slate-500">No ELF binaries found in extracted rootfs.</td></tr>';
                 return;
             }
             tbody.innerHTML = '';
             binaries.forEach(b => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-graphite-850 transition';
+                tr.className = 'hover:bg-white/5 transition';
+                const badge = (val, enabledText, disabledText) => {
+                    const st = (val?.status || '').toLowerCase();
+                    if (st === 'enabled') return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">${enabledText || 'YES'}</span>`;
+                    if (st === 'not_detected' || st === 'disabled') return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">${disabledText || 'NO'}</span>`;
+                    return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-slate-400">N/A</span>`;
+                };
 
-                const badgeFor = (st, detail) => {
-                    const s = (st || '').toLowerCase();
-                    if (s === 'enabled') {
-                        if (detail === 'partial_relro') return `<span class="px-2 py-0.5 rounded text-[10px] status-partial font-bold">PARTIAL</span>`;
-                        return `<span class="px-2 py-0.5 rounded text-[10px] status-enabled font-bold">ENABLED</span>`;
+                const relroBadge = () => {
+                    const r = b.relro || {};
+                    if (r.status === 'enabled') {
+                        if (r.details === 'partial_relro') return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">PARTIAL</span>`;
+                        return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">FULL</span>`;
                     }
-                    if (s === 'not_detected') return `<span class="px-2 py-0.5 rounded text-[10px] status-disabled font-bold">DISABLED</span>`;
-                    return `<span class="px-2 py-0.5 rounded text-[10px] status-na font-bold">${escapeHtml(s.toUpperCase())}</span>`;
+                    return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">NONE</span>`;
                 };
 
                 tr.innerHTML = `
-                    <td class="p-3 font-semibold text-slate-200">${escapeHtml(b.file_path)}</td>
-                    <td class="p-3">${escapeHtml(b.architecture)} (${b.bitness}-bit)</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] bg-graphite-800 text-slate-300">${escapeHtml(b.elf_type)}</span></td>
-                    <td class="p-3">${badgeFor(b.nx.status)}</td>
-                    <td class="p-3">${badgeFor(b.pie.status)}</td>
-                    <td class="p-3">${badgeFor(b.relro.status, b.relro.details)}</td>
-                    <td class="p-3">${badgeFor(b.canary.status)}</td>
-                    <td class="p-3">${badgeFor(b.fortify.status)}</td>
-                    <td class="p-3 text-amber-400 font-bold">${b.suspicious_sinks ? b.suspicious_sinks.length : 0}</td>
+                    <td class="p-3 font-bold text-white">${escapeHtml(b.file_path)}</td>
+                    <td class="p-3 text-cyan-300 font-mono">${escapeHtml(b.architecture || 'x86_64')}</td>
+                    <td class="p-3">${badge(b.nx, 'NX ON', 'NX OFF')}</td>
+                    <td class="p-3">${badge(b.pie, 'PIE', 'NO PIE')}</td>
+                    <td class="p-3">${relroBadge()}</td>
+                    <td class="p-3">${badge(b.canary, 'CANARY', 'NO CAN')}</td>
+                    <td class="p-3">${badge(b.fortify, 'FORTIFY', 'NONE')}</td>
+                    <td class="p-3 text-amber-300 font-mono">${(b.suspicious_sinks || []).length}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
         function filterMitigations() {
-            const q = (document.getElementById('bm-search').value || '').toLowerCase();
+            const q = document.getElementById('bm-search').value.toLowerCase();
             const filtered = currentMitigations.filter(b => (b.file_path || '').toLowerCase().includes(q));
             renderMitigationTable(filtered);
         }
 
-        // Render Findings
         function renderFindingsTable(findings) {
             const tbody = document.getElementById('findings-tbody');
             if (findings.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-500">No vulnerabilities or posture defects match filters.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-500">No vulnerabilities match filter.</td></tr>';
                 return;
             }
             tbody.innerHTML = '';
             findings.forEach((f, idx) => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-graphite-850 transition cursor-pointer';
-                const sevClass = `sev-${(f.risk_rating || 'info').toLowerCase()}`;
+                tr.className = 'hover:bg-white/5 transition cursor-pointer';
+                const r = (f.risk_rating || 'info').toLowerCase();
+                let badgeClass = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
+                if (r === 'critical') badgeClass = 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+                else if (r === 'high') badgeClass = 'bg-orange-500/20 text-orange-300 border-orange-500/30';
+                else if (r === 'medium') badgeClass = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
 
                 tr.innerHTML = `
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase ${sevClass}">${escapeHtml(f.risk_rating)}</span></td>
-                    <td class="p-3 font-bold text-slate-200">${escapeHtml(f.cwe)}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] bg-graphite-800 text-slate-300">${escapeHtml(f.category)}</span></td>
-                    <td class="p-3 text-slate-300 font-semibold">${escapeHtml(f.binary)}</td>
-                    <td class="p-3 text-slate-400 italic">${escapeHtml(f.confidence)}</td>
-                    <td class="p-3 text-slate-300 truncate max-w-xs">${escapeHtml(f.details ? f.details.preview : f.evidence_ref)}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="openDrawer(${idx})" class="px-2.5 py-1 rounded bg-graphite-800 hover:bg-graphite-700 text-cyber-cyan text-[11px] border border-graphite-700">Triage</button>
+                    <td class="p-3"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${badgeClass}">${escapeHtml(r.toUpperCase())}</span></td>
+                    <td class="p-3 text-cyan-300 font-bold">${escapeHtml(f.cwe || 'N/A')}</td>
+                    <td class="p-3 font-semibold text-slate-200">${escapeHtml(f.binary || 'unknown')}</td>
+                    <td class="p-3 text-slate-400">${escapeHtml(f.category || 'General')}</td>
+                    <td class="p-3 text-slate-400 text-[11px]">${escapeHtml(f.confidence || 'verified')}</td>
+                    <td class="p-3">
+                        <button onclick="openDrawer(${idx})" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 font-sans text-xs transition">Inspect</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -839,35 +1275,40 @@
         }
 
         function filterFindings() {
-            const sev = document.getElementById('findings-sev-filter').value;
-            const q = (document.getElementById('findings-search').value || '').toLowerCase();
+            const sev = document.getElementById('findings-sev-filter').value.toLowerCase();
+            const q = document.getElementById('findings-search').value.toLowerCase();
             const filtered = currentFindings.filter(f => {
-                const matchSev = !sev || (f.risk_rating || '').toLowerCase() === sev;
-                const matchQ = (f.cwe || '').toLowerCase().includes(q) ||
-                               (f.category || '').toLowerCase().includes(q) ||
-                               (f.binary || '').toLowerCase().includes(q);
-                return matchSev && matchQ;
+                const matchesSev = !sev || (f.risk_rating || '').toLowerCase() === sev;
+                const matchesQ = (f.cwe || '').toLowerCase().includes(q) ||
+                                 (f.category || '').toLowerCase().includes(q) ||
+                                 (f.binary || '').toLowerCase().includes(q);
+                return matchesSev && matchesQ;
             });
             renderFindingsTable(filtered);
         }
 
-        // Slide-Over Investigation Drawer
-        function openDrawer(index) {
-            const f = currentFindings[index];
+        function openDrawer(idx) {
+            const f = currentFindings[idx];
             if (!f) return;
 
-            document.getElementById('drawer-sev-badge').className = `px-2 py-0.5 rounded text-[11px] font-mono font-bold sev-${(f.risk_rating || 'info').toLowerCase()}`;
-            document.getElementById('drawer-sev-badge').textContent = (f.risk_rating || '').toUpperCase();
-            document.getElementById('drawer-cwe').textContent = `${f.cwe || 'CWE-UNKNOWN'} · ${f.details ? f.details.type : f.category}`;
-            document.getElementById('drawer-vuln-id').textContent = f.vulnerability_id;
-            document.getElementById('drawer-binary').textContent = f.binary;
-            document.getElementById('drawer-cat-conf').textContent = `${f.category} (${f.confidence} confidence)`;
-            document.getElementById('drawer-preview').textContent = f.details ? f.details.preview : 'N/A';
-            document.getElementById('drawer-evidence-ref').textContent = `Evidence Ref: ${f.evidence_ref} (Redacted: ${f.redacted})`;
-            
-            const cs = f.crash_state || {};
-            document.getElementById('drawer-crash-state').textContent = `fault_address: ${cs.fault_address || 'null'} | registers: ${cs.registers || 'null'} | stack_hash: ${cs.stack_hash || 'null'}`;
-            document.getElementById('drawer-notes').textContent = f.details ? f.details.description : 'Static review finding mapped to MITRE CWE definition.';
+            const r = (f.risk_rating || 'info').toLowerCase();
+            let badgeClass = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
+            if (r === 'critical') badgeClass = 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+            else if (r === 'high') badgeClass = 'bg-orange-500/20 text-orange-300 border-orange-500/30';
+            else if (r === 'medium') badgeClass = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+
+            const badge = document.getElementById('drawer-sev-badge');
+            badge.className = `px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold border ${badgeClass}`;
+            badge.textContent = r.toUpperCase();
+
+            document.getElementById('drawer-cwe').textContent = f.cwe || 'CWE-Unknown';
+            document.getElementById('drawer-vuln-id').textContent = f.vulnerability_id || '-';
+            document.getElementById('drawer-binary').textContent = f.binary || '-';
+            document.getElementById('drawer-cat-conf').textContent = `${f.category || 'Security'} (${f.confidence || 'verified'})`;
+            document.getElementById('drawer-preview').textContent = f.redacted_preview || 'No preview available (Redacted or N/A)';
+            document.getElementById('drawer-evidence-ref').textContent = f.evidence_ref || '-';
+            document.getElementById('drawer-crash-state').textContent = JSON.stringify(f.crash_state || null);
+            document.getElementById('drawer-notes').textContent = f.notes || 'No remediation guidance logged.';
 
             document.getElementById('drawer-backdrop').classList.remove('hidden');
             document.getElementById('investigation-drawer').classList.remove('translate-x-full');
@@ -878,74 +1319,83 @@
             document.getElementById('investigation-drawer').classList.add('translate-x-full');
         }
 
-        // Upload Form Handling
+        // Terminal Log Appender
+        function appendLog(msg, isError = false) {
+            const term = document.getElementById('terminal-feed');
+            const div = document.createElement('div');
+            div.className = isError ? 'text-rose-400 font-bold' : 'text-emerald-300';
+            div.textContent = `[${new Date().toISOString().substring(11, 19)}] ${msg}`;
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+        }
+
+        // Upload Form Handler
         const dropArea = document.getElementById('dropArea');
         const fileInput = document.getElementById('firmwareFile');
-        const fileLabel = document.getElementById('fileLabel');
         const uploadForm = document.getElementById('uploadForm');
+        const selectedFileName = document.getElementById('selectedFileName');
         const submitBtn = document.getElementById('submitBtn');
-        const btnSpinner = document.getElementById('btnSpinner');
         const btnText = document.getElementById('btnText');
-        const uploadFeedback = document.getElementById('uploadFeedback');
-        const terminalFeed = document.getElementById('terminal-feed');
+        const btnSpinner = document.getElementById('btnSpinner');
 
         dropArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                const f = fileInput.files[0];
-                fileLabel.textContent = `${f.name} (${(f.size / (1024 * 1024)).toFixed(2)} MB)`;
+        dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-cyan-400'); });
+        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-cyan-400'));
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('border-cyan-400');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                selectedFileName.textContent = fileInput.files[0].name;
             }
         });
 
-        function appendLog(msg, isErr = false) {
-            const div = document.createElement('div');
-            div.className = isErr ? 'text-red-400 font-bold' : 'text-slate-300';
-            div.textContent = msg;
-            terminalFeed.appendChild(div);
-            terminalFeed.scrollTop = terminalFeed.scrollHeight;
-        }
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                selectedFileName.textContent = fileInput.files[0].name;
+            }
+        });
 
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!fileInput.files.length) return;
+            if (!fileInput.files || fileInput.files.length === 0) {
+                appendLog("Error: Please select a firmware file first.", true);
+                return;
+            }
 
             const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
+            appendLog(`Initiating upload: ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`);
 
             btnSpinner.classList.remove('hidden');
             btnText.textContent = 'Analyzing...';
             submitBtn.disabled = true;
-            terminalFeed.innerHTML = '';
-            appendLog(`[START] Ingesting firmware payload: ${file.name}`);
-            appendLog(`[INGEST] Calculating SHA-256 and enforcing file-size quotas...`);
+
+            const formData = new FormData();
+            formData.append('file', file);
 
             try {
                 const res = await fetch('/api/v1/firmware/upload', {
                     method: 'POST',
                     body: formData
                 });
-
                 const data = await res.json();
 
                 if (!res.ok) {
-                    appendLog(`[ABORT] ${data.detail || data.message || 'Upload rejected'}`, true);
-                    uploadFeedback.innerHTML = `<span class="text-red-400 font-bold">Error: ${escapeHtml(data.detail || data.message)}</span>`;
+                    appendLog(`Upload rejected: ${data.message || data.detail}`, true);
                     return;
                 }
 
-                appendLog(`[EXTRACT] Unpacked rootfs safely. Zip Slip checks clean.`);
+                appendLog(`[EXTRACT] Unpacked rootfs safely. Zero Zip Slip.`);
                 appendLog(`[AUDIT] Hardening audit complete: ${data.binaries_audited} ELFs checked.`);
-                appendLog(`[TRIAGE] Normalized ${data.findings_count} security findings to Appendix A.`);
-                appendLog(`[SUCCESS] Analysis completed for job: ${data.job_id}`);
+                appendLog(`[TRIAGE] Normalized ${data.findings_count} security findings.`);
+                appendLog(`[SUCCESS] Analysis completed for firmware: ${data.firmware_id}`);
 
-                uploadFeedback.innerHTML = `<span class="text-cyber-neon font-bold">Pipeline Finished!</span>`;
                 await loadFirmwareList();
                 await loadFirmwareDetails(data.firmware_id);
                 switchView('overview');
 
             } catch (err) {
-                appendLog(`[ERROR] Network error: ${err.message}`, true);
+                appendLog(`Network error: ${err.message}`, true);
             } finally {
                 btnSpinner.classList.add('hidden');
                 btnText.textContent = 'Ingest & Run Pipeline';
