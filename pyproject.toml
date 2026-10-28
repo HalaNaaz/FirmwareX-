@@ -36,3 +36,4 @@ asyncio_mode = "auto"
 [tool.coverage.run]
 source = ["firmwarex"]
 omit = ["tests/*"]
+

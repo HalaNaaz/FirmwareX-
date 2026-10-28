@@ -417,3 +417,4 @@ class SafeExtractor:
         # Sort inventory deterministically by path
         inventory.sort(key=lambda x: x.path)
         return inventory
+

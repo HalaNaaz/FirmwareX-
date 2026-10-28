@@ -13,3 +13,4 @@ if __name__ == "__main__":
     out_file = samples_dir / "sample_iot_router.tar.gz"
     create_benign_firmware_archive(out_file, archive_type="tar.gz")
     print(f"Sample firmware archive generated successfully at: {out_file}")
+

@@ -28,3 +28,4 @@ class AuditLogger:
         except Exception:
             # Audit logging must not crash main application execution
             pass
+

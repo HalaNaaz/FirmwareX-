@@ -183,3 +183,4 @@ def create_benign_firmware_archive(output_path: Path, archive_type: str = "tar.g
                 ti = tarfile.TarInfo(name=name)
                 ti.size = len(content)
                 tf.addfile(ti, io.BytesIO(content))
+

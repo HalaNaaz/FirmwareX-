@@ -89,3 +89,4 @@ To delete transient uploaded firmware, extracted files, and test artifacts:
 ```powershell
 Remove-Item -Recurse -Force data\uploads\*, data\extracted\*, data\reports\*, data\*.db, data\*.jsonl -ErrorAction SilentlyContinue
 ```
+

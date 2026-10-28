@@ -76,3 +76,4 @@ flowchart TD
 
 * **Database:** SQLite (`firmwarex.db`) tracking firmwares, analysis jobs, file inventory, binary audits, and normalized findings.
 * **Immutable Audit Log:** `audit_log.jsonl` provides an append-only audit trail recording timestamps, event types, firmware digests, and security exceptions.
+

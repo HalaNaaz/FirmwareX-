@@ -189,3 +189,4 @@ class FindingNormaliser:
             })
 
         return findings
+

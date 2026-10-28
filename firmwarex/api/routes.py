@@ -368,3 +368,4 @@ async def get_job_status(job_id: str):
     if not job:
         raise HTTPException(status_code=404, detail="Job ID not found.")
     return job
+

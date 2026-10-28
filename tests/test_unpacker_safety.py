@@ -174,3 +174,4 @@ def test_unsupported_format_detection(tmp_path):
         extractor.extract(squashfs_file, tmp_path / "out")
 
     assert "Unsupported firmware format 'squashfs'" in str(exc.value)
+

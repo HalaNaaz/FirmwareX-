@@ -105,3 +105,4 @@ def test_summarize_mitigations(tmp_path):
     assert summary["total_binaries"] == 2
     assert summary["nx_enabled"] == 1
     assert summary["nx_percentage"] == 50.0
+

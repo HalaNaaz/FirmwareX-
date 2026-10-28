@@ -57,3 +57,4 @@ class Redactor:
                 masked = cls.redact(match)
                 sanitized = sanitized.replace(match, masked)
         return sanitized
+

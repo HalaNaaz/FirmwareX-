@@ -49,3 +49,4 @@ FirmwareX currently extracts and inspects standard archive containers:
 | **Protocol-Aware Fuzzing** | PRD Section 6.4 | Fuzzing requires live emulated network sockets (HTTP/UPnP/MQTT). Marked as "(Should)" in PRD. |
 | **Interactive CFG Visualisation** | PRD Section 6.6 | Complex graph rendering in the web browser requires heavy client-side graph engines (e.g., Cytoscape/D3) which would introduce unnecessary failure modes during an MVP build. |
 | **Distributed Celery / Redis Queue** | PRD Section 5.1 | The native FastAPI + SQLite job queue fulfills throughput targets (< 30 min per image) with zero external daemon dependencies. |
+

@@ -108,3 +108,4 @@ def test_normaliser_appendix_a_compliance(tmp_path):
     assert "stack_hash" in norm["crash_state"]
     # Ensure crash state is null for static findings (no invented dynamic data)
     assert norm["crash_state"]["fault_address"] is None
+

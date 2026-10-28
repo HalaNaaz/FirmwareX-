@@ -102,3 +102,4 @@ def test_upload_unsupported_format(tmp_path):
     data = response.json()
     assert data["status"] == "unsupported_format"
     assert "Unsupported format 'squashfs'" in data["message"]
+

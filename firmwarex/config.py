@@ -51,3 +51,4 @@ def ensure_directories():
     UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
     EXTRACTED_DIR.mkdir(parents=True, exist_ok=True)
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
