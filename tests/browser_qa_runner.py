@@ -82,15 +82,16 @@ def run_browser_qa():
         dom_res = subprocess.run(dump_cmd, capture_output=True, encoding="utf-8", errors="replace", timeout=15)
         dom_html = dom_res.stdout or ""
 
-        # Verify key DOM elements
+        # Verify key DOM elements in the SOC Command Center
         required_elements = [
             'id="dropArea"',
             'id="firmwareFile"',
             'id="uploadForm"',
-            'id="analysisView"',
-            'id="findingsTableBody"',
-            'id="mitigationTableBody"',
-            'id="filesystemTableBody"',
+            'id="active-firmware-select"',
+            'id="findings-tbody"',
+            'id="bm-tbody"',
+            'id="fs-tbody"',
+            'id="investigation-drawer"',
             "FirmwareX",
             "v0.1.0",
         ]

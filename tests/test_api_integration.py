@@ -15,6 +15,15 @@ def test_health_check():
     assert response.json()["status"] == "healthy"
 
 
+def test_list_firmware_endpoint():
+    """Verify listing all firmware records."""
+    response = client.get("/api/v1/firmware")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total" in data
+    assert isinstance(data["firmwares"], list)
+
+
 def test_dashboard_ui_html():
     """Verify dashboard index page serves valid HTML5 containing FirmwareX branding."""
     response = client.get("/")

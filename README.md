@@ -59,6 +59,7 @@ curl -X POST "http://localhost:8080/api/v1/firmware/upload" `
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `POST` | `/api/v1/firmware/upload` | Streams firmware archive, enforces Zip-Slip safety, extracts inventory, runs audits. |
+| `GET` | `/api/v1/firmware` | Lists all ingested firmware images with SHA-256 digests and processing status. |
 | `GET` | `/api/v1/firmware/{id}` | Returns firmware ingest metadata, digest, and status. |
 | `GET` | `/api/v1/firmware/{id}/filesystem` | Returns rootfs file inventory with relative paths and SHA-256 digests. |
 | `GET` | `/api/v1/firmware/{id}/binary-audit` | Returns per-binary mitigation matrix (NX, PIE, RELRO, Canaries, Sinks). |
@@ -75,13 +76,13 @@ Run all automated unit, integration, and security tests with coverage measuremen
 .\.venv\Scripts\python.exe -m pytest -v --cov=firmwarex
 ```
 
-### Verified Test Suite Breakdown (31 Tests Total — 84% Coverage):
+### Verified Test Suite Breakdown (32 Tests Total — 83% Coverage):
 * **Security & Containment:** Zip Slip path traversal rejection, TAR traversal rejection, symlink escape rejection, FIFO/special device node blocking, file count quotas, uncompressed size ceilings.
 * **Input Validation & Error Handling:** 0-byte upload rejection (HTTP 400), oversized upload rejection (HTTP 413), corrupted archive handling (HTTP 400), unsupported format detection (HTTP 422), non-existent resource handling (HTTP 404).
 * **ELF Hardening Audit:** NX/DEP detection (`PT_GNU_STACK`), Full & Partial RELRO detection (`PT_GNU_RELRO` & `BIND_NOW`), PIE detection (`ET_DYN` vs `ET_EXEC`), MIPS big-endian, ARM little-endian, ARM64/AArch64, x86_64, relocatable object files (`ET_REL` with `not_applicable`), truncated/corrupted ELF headers, and non-ELF graceful handling.
 * **Secret & Crypto Redaction:** AWS key masking, Shannon entropy calculations ($H > 4.5$), password assignment detection, shadow database matching, zero plaintext persistence in database or exports.
 * **Schema Compliance:** Strict PRD Appendix A field structure, CWE mapping, and null safety verification.
-* **API, Persistence & Dashboard:** End-to-end ingestion pipeline, report retrieval, SQLite transactions, append-only audit logging (`audit_log.jsonl`), HTML5 dashboard rendering.
+* **API, Persistence & Dashboard:** End-to-end ingestion pipeline, all-firmwares enumeration endpoint (`GET /api/v1/firmware`), report retrieval, SQLite transactions, append-only audit logging (`audit_log.jsonl`), HTML5 SOC Command Center dashboard rendering.
 
 ---
 

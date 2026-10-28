@@ -43,6 +43,13 @@ async def api_health():
     return {"status": "healthy"}
 
 
+@api_router.get("/firmware")
+async def list_all_firmware():
+    """List all uploaded and analyzed firmware records for the SOC Command Center overview."""
+    firmwares = storage.list_firmwares()
+    return {"total": len(firmwares), "firmwares": firmwares}
+
+
 @api_router.post("/firmware/upload")
 async def upload_firmware(file: UploadFile = File(...)):
     """Upload a firmware image, validate format, safely extract, and run core security audits."""
