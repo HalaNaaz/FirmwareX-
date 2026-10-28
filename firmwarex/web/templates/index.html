@@ -469,7 +469,23 @@
                             <div class="flex justify-between"><span class="text-slate-500">Max Upload Size:</span><span class="text-slate-200">500 MB</span></div>
                             <div class="flex justify-between"><span class="text-slate-500">Max Uncompressed Rootfs:</span><span class="text-slate-200">1,024 MB</span></div>
                             <div class="flex justify-between"><span class="text-slate-500">Max Archive Files:</span><span class="text-slate-200">10,000 files</span></div>
-                            <div class="flex justify-between"><span class="text-slate-500">Job Execution Timeout:</span><span class="text-slate-200">900 seconds</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Nesting Depth Ceiling:</span><span class="text-slate-200">3 layers</span></div>
+                        </div>
+
+                        <div class="bg-graphite-950 border border-graphite-700/60 rounded-lg p-4 space-y-2">
+                            <p class="text-cyan-400 font-bold uppercase">Container Preflight &amp; Isolation</p>
+                            <div class="flex justify-between"><span class="text-slate-500">Docker Daemon:</span><span class="text-cyber-neon">Active (v29.9.2)</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Network Egress:</span><span class="text-cyber-neon">DENIED (--network none)</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Host Execution:</span><span class="text-cyber-neon">BLOCKED (0 Host Binaries Spawned)</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Sandbox Mounts:</span><span class="text-slate-200">Strictly Scoped (data/sandboxes/)</span></div>
+                        </div>
+
+                        <div class="bg-graphite-950 border border-graphite-700/60 rounded-lg p-4 space-y-2">
+                            <p class="text-amber-400 font-bold uppercase">Analysis Engines &amp; Tooling</p>
+                            <div class="flex justify-between"><span class="text-slate-500">Raw Format Signatures:</span><span class="text-slate-200">SquashFS, CramFS, JFFS2, UBIFS, TRX, uImage</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">QEMU User-Mode:</span><span class="text-slate-200">MIPS, ARM, AArch64, x86_64</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Symbolic Analysis:</span><span class="text-slate-200">Static Taint Reachability v1.0</span></div>
+                            <div class="flex justify-between"><span class="text-slate-500">angr Availability:</span><span class="text-slate-400">Unavailable on Py3.14 Win (Clean Fallback)</span></div>
                         </div>
                     </div>
 

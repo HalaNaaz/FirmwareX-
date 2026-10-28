@@ -110,16 +110,34 @@ class StorageManager:
                     FOREIGN KEY (firmware_id) REFERENCES firmware(id)
                 )
             """)
+
+            # Schema extensions for Phase 3: provenance, nested layers, and signatures
+            try:
+                cursor.execute("ALTER TABLE firmware ADD COLUMN signatures_json TEXT")
+            except sqlite3.OperationalError:
+                pass
+
+            try:
+                cursor.execute("ALTER TABLE inventory ADD COLUMN parent_archive TEXT DEFAULT 'root'")
+            except sqlite3.OperationalError:
+                pass
+
+            try:
+                cursor.execute("ALTER TABLE inventory ADD COLUMN nesting_level INTEGER DEFAULT 0")
+            except sqlite3.OperationalError:
+                pass
+
             conn.commit()
 
     def save_firmware(self, fw_data: dict[str, Any]):
         conn = self._get_connection()
         try:
             with conn:
+                sig_json = json.dumps(fw_data.get("signatures", [])) if "signatures" in fw_data else None
                 conn.execute("""
                     INSERT OR REPLACE INTO firmware (
-                        id, filename, sha256, size_bytes, format, is_supported, status, created_at, extraction_dir, error_message
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        id, filename, sha256, size_bytes, format, is_supported, status, created_at, extraction_dir, error_message, signatures_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     fw_data["id"],
                     fw_data["filename"],
@@ -131,6 +149,7 @@ class StorageManager:
                     fw_data["created_at"],
                     fw_data.get("extraction_dir"),
                     fw_data.get("error_message"),
+                    sig_json,
                 ))
         finally:
             conn.close()
@@ -139,7 +158,17 @@ class StorageManager:
         conn = self._get_connection()
         try:
             row = conn.execute("SELECT * FROM firmware WHERE id = ?", (firmware_id,)).fetchone()
-            return dict(row) if row else None
+            if not row:
+                return None
+            d = dict(row)
+            if d.get("signatures_json"):
+                try:
+                    d["signatures"] = json.loads(d["signatures_json"])
+                except Exception:
+                    d["signatures"] = []
+            else:
+                d["signatures"] = []
+            return d
         finally:
             conn.close()
 
@@ -147,7 +176,18 @@ class StorageManager:
         conn = self._get_connection()
         try:
             rows = conn.execute("SELECT * FROM firmware ORDER BY created_at DESC").fetchall()
-            return [dict(r) for r in rows]
+            result = []
+            for r in rows:
+                d = dict(r)
+                if d.get("signatures_json"):
+                    try:
+                        d["signatures"] = json.loads(d["signatures_json"])
+                    except Exception:
+                        d["signatures"] = []
+                else:
+                    d["signatures"] = []
+                result.append(d)
+            return result
         finally:
             conn.close()
 
@@ -188,8 +228,8 @@ class StorageManager:
                 for item in items:
                     d = item.to_dict() if hasattr(item, "to_dict") else item
                     conn.execute("""
-                        INSERT INTO inventory (firmware_id, path, type, size_bytes, sha256, is_elf, is_executable)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO inventory (firmware_id, path, type, size_bytes, sha256, is_elf, is_executable, parent_archive, nesting_level)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         firmware_id,
                         d["path"],
@@ -198,6 +238,8 @@ class StorageManager:
                         d.get("sha256"),
                         d.get("is_elf", False),
                         d.get("is_executable", False),
+                        d.get("parent_archive", "root"),
+                        d.get("nesting_level", 0),
                     ))
         finally:
             conn.close()

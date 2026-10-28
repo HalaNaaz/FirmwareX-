@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
@@ -18,12 +19,14 @@ from firmwarex.config import (
 from firmwarex.core.elf_auditor import ELFAuditor
 from firmwarex.core.normaliser import FindingNormaliser
 from firmwarex.core.secret_scanner import SecretScanner
+from firmwarex.core.symbolic_analyzer import BoundedSymbolicAnalyzer
 from firmwarex.core.unpacker import (
     SafeExtractor,
     SecurityException,
     compute_sha256,
-    detect_format,
+    detect_format_detailed,
 )
+from firmwarex.isolation.sandbox_manager import ContainmentPreflight
 
 api_router = APIRouter(prefix="/api/v1")
 storage = StorageManager()
@@ -97,9 +100,10 @@ async def upload_firmware(file: UploadFile = File(...)):
         upload_path.unlink(missing_ok=True)
         raise HTTPException(status_code=500, detail=f"Failed to stream upload: {e!s}")
 
-    # 2. Compute digest and detect format
+    # 2. Compute digest, detect format, and scan embedded signatures
     sha256_digest = compute_sha256(upload_path)
-    fmt, is_supported = detect_format(upload_path)
+    fmt, is_supported, signatures = detect_format_detailed(upload_path)
+    sig_dicts = [s.to_dict() for s in signatures]
 
     # Initialize firmware record
     fw_record = {
@@ -113,6 +117,7 @@ async def upload_firmware(file: UploadFile = File(...)):
         "created_at": _utc_now(),
         "extraction_dir": None,
         "error_message": None,
+        "signatures": sig_dicts,
     }
     storage.save_firmware(fw_record)
 
@@ -138,11 +143,15 @@ async def upload_firmware(file: UploadFile = File(...)):
 
     # If unsupported format, record clear limitation state and abort analysis gracefully
     if not is_supported:
+        tool_advice = "Raw proprietary containers (SquashFS, TRX, uImage) require external extraction modules (Binwalk), which are currently deferred in this environment."
+        if signatures:
+            primary_sig = signatures[0]
+            tool_advice = f"Detected: {primary_sig.name} at offset {primary_sig.offset}. Recommended tool: {primary_sig.recommended_tool}."
+
         err_msg = (
             f"Unsupported format '{fmt}'. Safe automated extraction in Phase 1 supports "
             "standard archive formats (.zip, .tar, .tar.gz, .tgz, .tar.bz2, .tar.xz). "
-            "Raw proprietary containers (SquashFS, TRX, uImage) require external extraction modules (Binwalk), "
-            "which are currently deferred in this environment."
+            f"{tool_advice}"
         )
         fw_record["status"] = "unsupported_format"
         fw_record["error_message"] = err_msg
@@ -168,6 +177,7 @@ async def upload_firmware(file: UploadFile = File(...)):
                 "message": err_msg,
                 "format": fmt,
                 "sha256": sha256_digest,
+                "signatures": sig_dicts,
             },
         )
 
@@ -370,6 +380,42 @@ async def get_vulnerabilities(
     }
 
 
+@api_router.get("/containment/preflight")
+async def get_containment_preflight():
+    """Retrieve live containment preflight status, Docker daemon health, and network isolation."""
+    return ContainmentPreflight.run_preflight().to_dict()
+
+
+@api_router.get("/firmware/{firmware_id}/signatures")
+async def get_firmware_signatures(firmware_id: str):
+    """Retrieve detected container format headers and embedded filesystem signatures."""
+    fw = storage.get_firmware(firmware_id)
+    if not fw:
+        raise HTTPException(status_code=404, detail="Firmware ID not found.")
+    return {
+        "firmware_id": firmware_id,
+        "signatures": fw.get("signatures", []),
+    }
+
+
+@api_router.get("/firmware/{firmware_id}/symbolic")
+async def get_firmware_symbolic(firmware_id: str):
+    """Retrieve bounded symbolic analysis leads for an analyzed firmware image."""
+    fw = storage.get_firmware(firmware_id)
+    if not fw:
+        raise HTTPException(status_code=404, detail="Firmware ID not found.")
+    ext_dir = fw.get("extraction_dir")
+    if not ext_dir or not Path(ext_dir).exists():
+        return {
+            "firmware_id": firmware_id,
+            "status": "no_extracted_files",
+            "review_leads": [],
+            "limitations": ["No extracted files present for analysis."],
+        }
+    report = BoundedSymbolicAnalyzer().analyze_workspace(Path(ext_dir))
+    return report.to_dict()
+
+
 @api_router.get("/firmware/{firmware_id}/report")
 async def get_report(firmware_id: str):
     """Export complete, verifiable JSON security report for compliance and audit."""
@@ -380,6 +426,13 @@ async def get_report(firmware_id: str):
     inventory = storage.get_inventory(firmware_id)
     audits = storage.get_binary_audits(firmware_id)
     findings = storage.get_findings(firmware_id)
+
+    # Telemetry and bounded symbolic analysis
+    preflight = ContainmentPreflight.run_preflight().to_dict()
+    symbolic_summary = None
+    ext_dir = fw.get("extraction_dir")
+    if ext_dir and Path(ext_dir).exists():
+        symbolic_summary = BoundedSymbolicAnalyzer().analyze_workspace(Path(ext_dir)).to_dict()
 
     return {
         "schema_version": "1.0",
@@ -394,6 +447,8 @@ async def get_report(firmware_id: str):
             "total_binaries": len(audits),
             "reports": audits,
         },
+        "containment_telemetry": preflight,
+        "symbolic_analysis": symbolic_summary,
         "findings_appendix_a": findings,
     }
 
