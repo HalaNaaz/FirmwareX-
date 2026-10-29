@@ -2,6 +2,8 @@ import binascii
 import hashlib
 import shutil
 import struct
+import subprocess
+import sys
 import zlib
 from pathlib import Path
 
@@ -343,6 +345,14 @@ class UbifsExtractor(BaseExtractor):
         tool = shutil.which("ubireader_extract_files") or shutil.which("ubireader_extract_images")
         if tool:
             return True, tool
+        venv_tool = Path(sys.prefix) / "Scripts" / "ubireader_extract_files.exe"
+        if venv_tool.exists():
+            return True, str(venv_tool)
+        try:
+            import ubi_reader
+            return True, f"ubi_reader ({getattr(ubi_reader, '__version__', 'detected')})"
+        except ImportError:
+            pass
         return False, "ubireader not installed in environment"
 
     def can_extract(self, file_path: Path, offset: int = 0) -> bool:
@@ -442,6 +452,71 @@ class UbifsExtractor(BaseExtractor):
                             "Extraction deferred."
                         ],
                     )
+
+                # Tool available: invoke ubireader_extract_files safely
+                tool_bin = shutil.which("ubireader_extract_files")
+                if not tool_bin:
+                    venv_tool = Path(sys.prefix) / "Scripts" / "ubireader_extract_files.exe"
+                    if venv_tool.exists():
+                        tool_bin = str(venv_tool)
+
+                if tool_bin and (Path(tool_bin).exists() or shutil.which(tool_bin)):
+                    output_dir.mkdir(parents=True, exist_ok=True)
+                    tracker = quota_tracker or QuotaTracker()
+                    cmd = [tool_bin, "-o", str(output_dir.resolve())]
+                    if offset > 0:
+                        cmd.extend(["-s", str(offset)])
+                    cmd.append(str(file_path.resolve()))
+
+                    try:
+                        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                        if proc.returncode == 0:
+                            extracted_files = []
+                            for root, _, files in Path(output_dir).walk():
+                                for f_name in files:
+                                    p_file = root / f_name
+                                    if not is_safe_extraction_path(output_dir, p_file):
+                                        raise SecurityViolationError(f"Path traversal detected in extracted file '{p_file}'")
+                                    tracker.add_file(p_file.stat().st_size)
+                                    extracted_files.append(str(p_file.relative_to(output_dir)).replace("\\", "/"))
+
+                            if extracted_files:
+                                diagnostics.append(f"ubireader extracted {len(extracted_files)} files ({tracker.current_total_bytes} bytes).")
+                                return ExtractionOutcome(
+                                    status=ExtractionStatus.EXTRACTED,
+                                    success=True,
+                                    format_id=self.format_id,
+                                    offset=offset,
+                                    tool_name="ubireader_extract_files",
+                                    tool_version=tool_info,
+                                    file_count=len(extracted_files),
+                                    total_size_bytes=tracker.current_total_bytes,
+                                    extracted_files=extracted_files,
+                                    diagnostics=diagnostics,
+                                )
+
+                        diag_msg = proc.stderr.strip() or proc.stdout.strip() or f"exit code {proc.returncode}"
+                        diagnostics.append(f"ubireader output: {diag_msg}")
+                        return ExtractionOutcome(
+                            status=ExtractionStatus.PARTIAL,
+                            success=False,
+                            format_id=self.format_id,
+                            offset=offset,
+                            tool_name="ubireader_extract_files",
+                            tool_version=tool_info,
+                            errors=[f"ubireader completed without recovering file entries: {diag_msg}"],
+                            diagnostics=diagnostics,
+                        )
+                    except subprocess.TimeoutExpired:
+                        return ExtractionOutcome(
+                            status=ExtractionStatus.FAILED,
+                            success=False,
+                            format_id=self.format_id,
+                            offset=offset,
+                            tool_name="ubireader_extract_files",
+                            errors=["ubireader extraction exceeded 30s timeout."],
+                            diagnostics=diagnostics,
+                        )
 
                 return ExtractionOutcome(
                     status=ExtractionStatus.PARTIAL,

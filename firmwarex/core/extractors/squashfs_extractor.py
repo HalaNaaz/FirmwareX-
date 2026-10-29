@@ -44,7 +44,7 @@ class SquashfsExtractor(BaseExtractor):
     name = "SquashFS Extractor"
 
     def check_tool_availability(self) -> tuple[bool, str | None]:
-        """Check for unsquashfs or sasquatch on system PATH."""
+        """Check for unsquashfs or sasquatch on system PATH, or pure-Python PySquashfsImage."""
         for tool in ["unsquashfs", "sasquatch"]:
             tool_path = shutil.which(tool)
             if tool_path:
@@ -54,7 +54,12 @@ class SquashfsExtractor(BaseExtractor):
                     return True, f"{tool} ({version})"
                 except Exception:
                     return True, tool
-        return False, "unsquashfs / sasquatch not installed in environment"
+        try:
+            import PySquashfsImage
+            return True, f"PySquashfsImage ({getattr(PySquashfsImage, '__version__', 'v0.9.0')})"
+        except ImportError:
+            pass
+        return False, "unsquashfs / sasquatch / PySquashfsImage not installed in environment"
 
     def can_extract(self, file_path: Path, offset: int = 0) -> bool:
         if not file_path.exists():
@@ -134,7 +139,7 @@ class SquashfsExtractor(BaseExtractor):
 
                 if not tool_available:
                     diagnostics.append(
-                        "External extraction tool (unsquashfs/sasquatch) not found. "
+                        "No SquashFS extraction engine (unsquashfs/sasquatch/PySquashfsImage) available. "
                         "Failing closed to prevent corrupted partial extraction."
                     )
                     return ExtractionOutcome(
@@ -142,17 +147,27 @@ class SquashfsExtractor(BaseExtractor):
                         success=False,
                         format_id=self.format_id,
                         offset=offset,
-                        tool_name="unsquashfs / sasquatch",
+                        tool_name="unsquashfs / PySquashfsImage",
                         tool_version=None,
                         diagnostics=diagnostics,
                         errors=[
-                            "SquashFS superblock successfully validated, but host/container lacks 'unsquashfs'. "
-                            "Extraction requires external tooling."
+                            "SquashFS superblock successfully validated, but host lacks 'unsquashfs' and 'PySquashfsImage'. "
+                            "Extraction requires external tooling or Python library."
                         ],
                     )
 
-                # Execute unsquashfs safely if available
+                # Execute unsquashfs safely if binary is available
                 tool_bin = shutil.which("unsquashfs") or shutil.which("sasquatch")
+                if not tool_bin:
+                    # Fall back to pure-Python PySquashfsImage engine
+                    return self._extract_pysquashfs(
+                        file_path=file_path,
+                        output_dir=output_dir,
+                        offset=offset,
+                        tracker=tracker,
+                        diagnostics=diagnostics,
+                    )
+
                 output_dir.mkdir(parents=True, exist_ok=True)
                 cmd = [tool_bin, "-d", str(output_dir.resolve()), "-f"]
                 if offset > 0:
@@ -202,5 +217,92 @@ class SquashfsExtractor(BaseExtractor):
                 offset=offset,
                 tool_name=self.name,
                 errors=[f"SquashFS parsing failed: {e!s}"],
+                diagnostics=diagnostics,
+            )
+
+    def _extract_pysquashfs(
+        self,
+        file_path: Path,
+        output_dir: Path,
+        offset: int,
+        tracker: QuotaTracker,
+        diagnostics: list[str],
+    ) -> ExtractionOutcome:
+        """Pure-Python SquashFS 4.0 reader for environments lacking external C binaries."""
+        try:
+            import PySquashfsImage
+
+            img = PySquashfsImage.SquashFsImage.from_file(str(file_path.resolve()), offset=offset)
+            extracted_files: list[str] = []
+            total_bytes = 0
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            if img.root is None:
+                img.close()
+                return ExtractionOutcome(
+                    status=ExtractionStatus.CORRUPTED,
+                    success=False,
+                    format_id=self.format_id,
+                    offset=offset,
+                    tool_name="PySquashfsImage",
+                    errors=["Missing or invalid SquashFS root inode table."],
+                    diagnostics=diagnostics,
+                )
+
+            for item in img.root.riter():
+                if item == img.root:
+                    continue
+                rel_path = item.path.lstrip("/")
+                out_path = output_dir / rel_path
+                if not is_safe_extraction_path(output_dir, out_path):
+                    raise SecurityViolationError(f"Path traversal detected in SquashFS entry: {rel_path}")
+
+                if item.is_dir:
+                    out_path.mkdir(parents=True, exist_ok=True)
+                elif item.is_file:
+                    out_path.parent.mkdir(parents=True, exist_ok=True)
+                    data = item.read_bytes()
+                    tracker.add_file(len(data))
+                    out_path.write_bytes(data)
+                    extracted_files.append(rel_path.replace("\\", "/"))
+                    total_bytes += len(data)
+                elif item.is_symlink:
+                    out_path.parent.mkdir(parents=True, exist_ok=True)
+                    tracker.add_file(0)
+                    extracted_files.append(rel_path.replace("\\", "/"))
+
+            img.close()
+            diagnostics.append(f"PySquashfsImage recovered {len(extracted_files)} files ({total_bytes} bytes).")
+            return ExtractionOutcome(
+                status=ExtractionStatus.EXTRACTED,
+                success=True,
+                format_id=self.format_id,
+                offset=offset,
+                tool_name="PySquashfsImage",
+                tool_version=getattr(PySquashfsImage, "__version__", "v0.9.0"),
+                file_count=len(extracted_files),
+                total_size_bytes=total_bytes,
+                extracted_files=extracted_files,
+                diagnostics=diagnostics,
+            )
+        except SecurityViolationError as sec_err:
+            return ExtractionOutcome(
+                status=ExtractionStatus.FAILED,
+                success=False,
+                format_id=self.format_id,
+                offset=offset,
+                tool_name="PySquashfsImage",
+                errors=[f"Security boundary violation: {sec_err!s}"],
+                diagnostics=diagnostics,
+            )
+        except Exception as e:
+            diagnostics.append(f"PySquashfsImage parse encountered error: {e!s}")
+            return ExtractionOutcome(
+                status=ExtractionStatus.CORRUPTED if ("truncated" in str(e).lower() or "read" in str(e).lower()) else ExtractionStatus.UNSUPPORTED,
+                success=False,
+                format_id=self.format_id,
+                offset=offset,
+                tool_name="PySquashfsImage",
+                errors=[f"SquashFS extraction failed: {e!s}"],
                 diagnostics=diagnostics,
             )

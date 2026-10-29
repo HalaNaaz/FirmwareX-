@@ -17,6 +17,8 @@ dependencies = [
     "python-multipart>=0.0.9",
     "jinja2>=3.1.4",
     "cryptography>=42.0.0",
+    "ubi-reader>=0.8.16",
+    "PySquashfsImage>=0.9.0",
 ]
 
 [project.optional-dependencies]

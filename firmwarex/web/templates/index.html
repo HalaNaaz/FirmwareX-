@@ -411,20 +411,20 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
                     <!-- KPI CARD 1: VIVID LIME GRADIENT (Matches Portfolio Return in reference) -->
-                    <div class="glass-card-lime p-6 flex flex-col justify-between min-h-[175px]">
+                    <div id="card-containment" class="glass-card-lime p-6 flex flex-col justify-between min-h-[175px]">
                         <div class="flex items-center justify-between">
                             <span class="text-[11px] font-black uppercase tracking-wider text-slate-900/80">CONTAINMENT STATUS</span>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/20 text-slate-900">+100% SAFE</span>
+                            <span id="containment-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/20 text-slate-900">+100% SAFE</span>
                         </div>
                         <div class="my-3">
                             <div class="flex items-center gap-1.5 text-2xl font-black tracking-tight text-slate-950">
-                                <span>&uarr; 0 HOST EXEC</span>
+                                <span id="containment-metric">&uarr; 0 HOST EXEC</span>
                             </div>
-                            <p class="text-[11px] font-semibold text-slate-900/80 mt-1">Docker --network none Verified</p>
+                            <p id="containment-subtitle" class="text-[11px] font-semibold text-slate-900/80 mt-1">Docker --network none Verified</p>
                         </div>
                         <div class="text-[10px] font-mono text-slate-900/70 border-t border-black/10 pt-2 flex justify-between">
-                            <span>Egress: DENIED</span>
-                            <span>Rootfs: READ-ONLY</span>
+                            <span id="containment-egress">Egress: DENIED</span>
+                            <span id="containment-rootfs">Rootfs: READ-ONLY</span>
                         </div>
                     </div>
 
@@ -641,20 +641,20 @@
                             <!-- Segmented Bar (Matches BTC/ETH/SOL bar in reference) -->
                             <div class="mt-4 space-y-1">
                                 <div class="w-full h-2 rounded-full bg-black/30 overflow-hidden flex">
-                                    <div class="bg-amber-300 h-full w-[45%]" title="Hardcoded Passwords"></div>
-                                    <div class="bg-orange-400 h-full w-[35%]" title="AWS API Keys"></div>
-                                    <div class="bg-yellow-200 h-full w-[20%]" title="Shadow Hashes"></div>
+                                    <div id="bar-passwords" class="bg-amber-300 h-full w-[45%] transition-all duration-500" title="Hardcoded Passwords"></div>
+                                    <div id="bar-aws" class="bg-orange-400 h-full w-[35%] transition-all duration-500" title="API Keys"></div>
+                                    <div id="bar-shadow" class="bg-yellow-200 h-full w-[20%] transition-all duration-500" title="Shadow Hashes"></div>
                                 </div>
                                 <div class="flex justify-between text-[10px] font-mono text-amber-200/80 pt-1">
-                                    <span>PASSWORDS 45%</span>
-                                    <span>AWS 35%</span>
-                                    <span>SHADOW 20%</span>
+                                    <span id="lbl-passwords">PASSWORDS 45%</span>
+                                    <span id="lbl-aws">API KEYS 35%</span>
+                                    <span id="lbl-shadow">SHADOW 20%</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Mini List with Sparkline Curves (Exact 3 items matching reference) -->
-                        <div class="space-y-2 font-mono text-xs my-2">
+                        <!-- Mini List with Sparkline Curves (Exact items matching reference) -->
+                        <div id="secrets-items-container" class="space-y-2 font-mono text-xs my-2">
                             <div class="flex items-center justify-between bg-black/25 px-2.5 py-1.5 rounded-xl border border-white/5">
                                 <div>
                                     <span class="text-white font-semibold block text-[11px]">AWS Access Keys</span>
@@ -724,24 +724,24 @@
                             <!-- 5 Vertical Pill Capsules -->
                             <div class="flex items-end justify-between h-28 flex-1 px-1" aria-label="Mitigation Bars">
                                 <div class="flex flex-col items-center gap-1.5">
-                                    <div class="w-5 sm:w-6 h-20 rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]" title="NX / DEP: 83%"></div>
+                                    <div id="bar-nx" class="w-5 sm:w-6 h-20 rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-500" title="NX / DEP"></div>
                                     <span class="text-[10px] font-mono text-emerald-200 font-semibold">NX</span>
                                 </div>
                                 <div class="flex flex-col items-center gap-1.5">
-                                    <div class="w-5 sm:w-6 h-12 rounded-full bg-white/50" title="PIE / ASLR: 50%"></div>
+                                    <div id="bar-pie" class="w-5 sm:w-6 h-12 rounded-full bg-white/50 transition-all duration-500" title="PIE / ASLR"></div>
                                     <span class="text-[10px] font-mono text-emerald-200">PIE</span>
                                 </div>
                                 <div class="flex flex-col items-center gap-1.5">
-                                    <div class="w-5 sm:w-6 h-[88px] rounded-full bg-white/80" title="RELRO: 100%"></div>
+                                    <div id="bar-rel" class="w-5 sm:w-6 h-[88px] rounded-full bg-white/80 transition-all duration-500" title="RELRO"></div>
                                     <span class="text-[10px] font-mono text-emerald-200">REL</span>
                                 </div>
                                 <div class="flex flex-col items-center gap-1.5">
-                                    <div class="w-5 sm:w-6 h-12 rounded-full bg-white/50" title="Stack Canaries: 50%"></div>
+                                    <div id="bar-can" class="w-5 sm:w-6 h-12 rounded-full bg-white/50 transition-all duration-500" title="Stack Canaries"></div>
                                     <span class="text-[10px] font-mono text-emerald-200">CAN</span>
                                 </div>
                                 <div class="flex flex-col items-center gap-1.5">
                                     <!-- Highlighted active pill bar in electric neon lime matching Friday in reference -->
-                                    <div class="w-5 sm:w-6 h-[104px] rounded-full bg-[#CCFF00] shadow-[0_0_18px_#CCFF00]" title="Target Defense Score"></div>
+                                    <div id="bar-all" class="w-5 sm:w-6 h-[104px] rounded-full bg-[#CCFF00] shadow-[0_0_18px_#CCFF00] transition-all duration-500" title="Total Defense Score"></div>
                                     <span class="text-[10px] font-mono text-white font-bold">ALL</span>
                                 </div>
                             </div>
@@ -1085,6 +1085,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            await updateContainmentStatus();
             await loadFirmwareList();
         });
 
@@ -1110,6 +1111,7 @@
                 if (allFirmwares.length === 0) {
                     select.innerHTML = '<option value="">No Firmware Ingested</option>';
                     renderRecentTable([]);
+                    renderEmptyOverview();
                     return;
                 }
 
@@ -1162,6 +1164,86 @@
         }
 
         
+        
+        async function updateContainmentStatus() {
+            try {
+                const res = await fetch('/api/v1/containment/preflight');
+                if (!res.ok) return;
+                const data = await res.json();
+                const card = document.getElementById('card-containment');
+                const badge = document.getElementById('containment-badge');
+                const metric = document.getElementById('containment-metric');
+                const subtitle = document.getElementById('containment-subtitle');
+                const egress = document.getElementById('containment-egress');
+                const rootfs = document.getElementById('containment-rootfs');
+
+                if (data.daemon_responsive && data.passed) {
+                    if (card) {
+                        card.className = 'glass-card-lime p-6 flex flex-col justify-between min-h-[175px]';
+                    }
+                    if (badge) {
+                        badge.textContent = '+100% ISOLATED';
+                        badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/20 text-slate-900';
+                    }
+                    if (metric) metric.innerHTML = '&uarr; DOCKER ACTIVE';
+                    if (subtitle) subtitle.textContent = 'network=none · read-only rootfs';
+                    if (egress) egress.textContent = 'Egress: DENIED';
+                    if (rootfs) rootfs.textContent = 'Rootfs: READ-ONLY';
+                } else {
+                    if (badge) {
+                        badge.textContent = 'FAIL-CLOSED';
+                        badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                    }
+                    if (metric) metric.innerHTML = '&uarr; 0 HOST EXEC';
+                    if (subtitle) subtitle.textContent = 'Docker Offline · Emulation Blocked';
+                    if (egress) egress.textContent = 'Host Exec: PREVENTED';
+                    if (rootfs) rootfs.textContent = 'Status: SAFE (FAIL-CLOSED)';
+                }
+            } catch (err) {
+                console.warn("Containment preflight check deferred:", err);
+            }
+        }
+
+        function renderEmptyOverview() {
+            const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            setTxt('hero-findings-metric', '---');
+            setTxt('hero-critical-badge', 'No Findings');
+            setTxt('ov-filename', 'No Firmware Ingested');
+            setTxt('ov-status-pill', 'AWAITING UPLOAD');
+            setTxt('ov-sha256', '----------------');
+            setTxt('stat-total-files', '0');
+            setTxt('stat-total-elfs', '0');
+            setTxt('stat-nx-ratio', '0%');
+            updateRadialGauge(0);
+            setTxt('gauge-nx-pct', '0%');
+            setTxt('gauge-pie-pct', '0%');
+            setTxt('gauge-canary-pct', '0%');
+            setTxt('gauge-relro-pct', '0%');
+            setTxt('count-critical', '0');
+            setTxt('count-high', '0');
+            setTxt('count-medium', '0');
+            setTxt('count-low', '0');
+            setTxt('stat-total-findings', '0');
+            setTxt('badge-total-findings', '0');
+
+            const secCont = document.getElementById('secrets-items-container');
+            if (secCont) {
+                secCont.innerHTML = '<div class="p-3 text-center text-xs text-amber-200/60 font-mono bg-black/20 rounded-xl border border-white/5">Awaiting firmware upload. Zero active findings.</div>';
+            }
+            ['bar-passwords', 'bar-aws', 'bar-shadow'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.width = '0%';
+            });
+            setTxt('lbl-passwords', 'PASSWORDS 0%');
+            setTxt('lbl-aws', 'API KEYS 0%');
+            setTxt('lbl-shadow', 'KEYS 0%');
+
+            ['bar-nx', 'bar-pie', 'bar-rel', 'bar-can', 'bar-all'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.height = '14px';
+            });
+        }
+
         function updateRadialGauge(pct) {
             const ratio = Math.max(0, Math.min(100, pct)) / 100;
             const g = document.getElementById('tachometer-ticks');
@@ -1232,6 +1314,24 @@
                 const canRatio = summary.total_binaries > 0 ? Math.round((summary.canary_enabled / summary.total_binaries) * 100) : 0;
                 document.getElementById('gauge-canary-pct').textContent = `${canRatio}%`;
 
+                const relroRatio = summary.total_binaries > 0 ? Math.round(((summary.relro_full + summary.relro_partial) / summary.total_binaries) * 100) : 0;
+                document.getElementById('gauge-relro-pct').textContent = `${relroRatio}%`;
+
+                // Update Stocks-style Mitigation pill bar heights dynamically
+                const allRatio = summary.total_binaries > 0 ? Math.round((nxRatio + pieRatio + canRatio + relroRatio) / 4) : 0;
+                const setPillHeight = (id, pct) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const h = summary.total_binaries > 0 ? Math.max(14, Math.min(108, Math.round(pct * 1.04))) : 14;
+                    el.style.height = `${h}px`;
+                    el.title = `${pct}% enabled`;
+                };
+                setPillHeight('bar-nx', nxRatio);
+                setPillHeight('bar-pie', pieRatio);
+                setPillHeight('bar-rel', relroRatio);
+                setPillHeight('bar-can', canRatio);
+                setPillHeight('bar-all', allRatio);
+
                 renderMitigationTable(currentMitigations);
 
                 // 4. Vulnerabilities & Findings
@@ -1257,6 +1357,65 @@
                 document.getElementById('count-medium').textContent = cMed;
                 document.getElementById('count-low').textContent = cLow;
                 document.getElementById('hero-critical-badge').textContent = `${cCrit} Critical + ${cHigh} High`;
+
+                // Dynamically update Secrets & Credentials breakdown from currentFindings
+                const secretFindings = currentFindings.filter(f =>
+                    f.category === "Hardcoded Credentials" || f.category === "Cryptographic Secrets"
+                );
+                let countPass = 0, countApi = 0, countPriv = 0;
+                secretFindings.forEach(f => {
+                    const t = (f.title || '').toLowerCase();
+                    if (t.includes('api') || t.includes('token') || t.includes('aws') || t.includes('slack')) countApi++;
+                    else if (t.includes('password') || t.includes('shadow') || t.includes('credential')) countPass++;
+                    else countPriv++;
+                });
+
+                const totalSec = secretFindings.length;
+                const pPass = totalSec > 0 ? Math.round((countPass / totalSec) * 100) : 0;
+                const pApi = totalSec > 0 ? Math.round((countApi / totalSec) * 100) : 0;
+                const pPriv = totalSec > 0 ? Math.max(0, 100 - pPass - pApi) : 0;
+
+                const barPass = document.getElementById('bar-passwords');
+                const barApi = document.getElementById('bar-aws');
+                const barShadow = document.getElementById('bar-shadow');
+                if (barPass) barPass.style.width = `${pPass}%`;
+                if (barApi) barApi.style.width = `${pApi}%`;
+                if (barShadow) barShadow.style.width = `${pPriv}%`;
+
+                const lblPass = document.getElementById('lbl-passwords');
+                const lblApi = document.getElementById('lbl-aws');
+                const lblShadow = document.getElementById('lbl-shadow');
+                if (lblPass) lblPass.textContent = totalSec > 0 ? `PASSWORDS ${pPass}%` : `PASSWORDS 0%`;
+                if (lblApi) lblApi.textContent = totalSec > 0 ? `API KEYS ${pApi}%` : `API KEYS 0%`;
+                if (lblShadow) lblShadow.textContent = totalSec > 0 ? `KEYS/HASHES ${pPriv}%` : `KEYS 0%`;
+
+                const secCont = document.getElementById('secrets-items-container');
+                if (secCont) {
+                    if (secretFindings.length === 0) {
+                        secCont.innerHTML = '<div class="p-3 text-center text-xs text-amber-200/60 font-mono bg-black/20 rounded-xl border border-white/5">Clean credential audit &middot; Zero high-entropy secrets detected.</div>';
+                    } else {
+                        secCont.innerHTML = '';
+                        secretFindings.slice(0, 3).forEach((f, idx) => {
+                            const row = document.createElement('div');
+                            row.className = 'flex items-center justify-between bg-black/25 px-2.5 py-1.5 rounded-xl border border-white/5';
+                            const masked = (f.evidence && f.evidence.matched_redacted) ? f.evidence.matched_redacted : (f.title || 'Secret');
+                            const entropy = (f.evidence && f.evidence.entropy) ? `Entropy ${Number(f.evidence.entropy).toFixed(1)}` : 'Redacted';
+                            const riskCol = f.risk_rating === 'Critical' ? 'text-rose-400' : 'text-amber-300';
+                            row.innerHTML = `
+                                <div class="truncate max-w-[170px]">
+                                    <span class="text-white font-semibold block text-[11px] truncate">${escapeHtml(f.title)}</span>
+                                    <span class="text-[9px] text-amber-200/70 font-mono">${escapeHtml(masked)}</span>
+                                </div>
+                                <svg class="w-14 h-4" viewBox="0 0 60 20" fill="none"><path d="M 0 12 Q 15 ${idx === 0 ? '4' : (idx === 1 ? '16' : '6')}, 30 10 T 60 4" stroke="#FBBF24" stroke-width="2" style="filter: drop-shadow(0 0 3px rgba(251,191,36,0.6));" /></svg>
+                                <div class="text-right flex-shrink-0">
+                                    <span class="${riskCol} font-bold block text-xs">${escapeHtml(f.risk_rating)}</span>
+                                    <span class="text-[9px] text-emerald-400 font-sans">${escapeHtml(entropy)}</span>
+                                </div>
+                            `;
+                            secCont.appendChild(row);
+                        });
+                    }
+                }
 
                 renderFindingsTable(currentFindings);
 
