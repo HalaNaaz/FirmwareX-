@@ -328,16 +328,23 @@
                                 <path d="M 0 68 C 150 58, 280 84, 430 72 C 540 64, 620 70, 700 66 L 700 90 C 620 86, 540 92, 430 84 C 280 82, 150 94, 0 88 Z" fill="url(#streamCore)" />
 
                                 <!-- Vertical Milestone Indicators (Inspired by Jan/May/Oct in reference) -->
-                                <line x1="140" y1="20" x2="140" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
-                                <line x1="430" y1="20" x2="430" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
-                                <line x1="640" y1="20" x2="640" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
+                                <line x1="140" y1="25" x2="140" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
+                                <line x1="430" y1="25" x2="430" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
+                                <line x1="640" y1="25" x2="640" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
                             </svg>
 
-                            <!-- Milestone Badges -->
-                            <div class="absolute inset-0 flex justify-between items-end px-6 pb-1 text-[11px] font-semibold text-slate-200">
-                                <span class="bg-black/60 px-2.5 py-0.5 rounded-full border border-white/20">Phase 1: Ingest</span>
-                                <span class="bg-black/60 px-2.5 py-0.5 rounded-full border border-white/20">Phase 2: Audit</span>
-                                <span class="bg-black/60 px-2.5 py-0.5 rounded-full border border-white/20">Phase 3: Triage</span>
+                            <!-- Top Milestone Marker Pills (Like $58K, $60K, $68K in reference) -->
+                            <div class="absolute top-0 inset-x-0 flex justify-between px-16 text-[10px] font-mono font-bold text-slate-200 pointer-events-none">
+                                <span class="bg-black/80 px-2 py-0.5 rounded-full border border-white/20 shadow-md">INGEST</span>
+                                <span class="bg-black/80 px-2 py-0.5 rounded-full border border-white/20 shadow-md">AUDIT</span>
+                                <span class="bg-black/80 px-2 py-0.5 rounded-full border border-white/20 shadow-md">TRIAGE</span>
+                            </div>
+
+                            <!-- Bottom Milestone Badges (Like Jan, May, Oct in reference) -->
+                            <div class="absolute inset-x-0 bottom-1 flex justify-between items-end px-14 text-[11px] font-semibold text-slate-300">
+                                <span class="bg-black/60 px-2.5 py-0.5 rounded-full border border-white/20">Stage 1</span>
+                                <span class="bg-black/60 px-2.5 py-0.5 rounded-full border border-white/20">Stage 2</span>
+                                <span class="bg-black/60 px-2.5 py-0.5 rounded-full border border-white/20">Stage 3</span>
                             </div>
                         </div>
                     </div>
@@ -352,18 +359,17 @@
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-white/10 text-slate-300 border border-white/10">TARGET 80%</span>
                         </div>
 
-                        <!-- Circular Tachometer Arc SVG Gauge -->
-                        <div class="relative flex items-center justify-center my-4 py-2">
-                            <svg class="w-48 h-32" viewBox="0 0 200 120">
-                                <!-- Background dashed arc -->
-                                <path d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="14" stroke-linecap="round" stroke-dasharray="3, 7" />
-                                <!-- Glowing active gauge arc -->
-                                <path id="tachometer-arc" d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="#00F0FF" stroke-width="14" stroke-linecap="round" stroke-dasharray="190, 300" style="filter: drop-shadow(0 0 8px rgba(0,240,255,0.6));" />
+                        <!-- Radial Notched Tachometer SVG Gauge (Exact match to reference Allocation card) -->
+                        <div class="relative flex items-center justify-center my-2 py-1">
+                            <svg class="w-56 h-36" viewBox="0 0 220 130">
+                                <g id="tachometer-ticks">
+                                    <!-- Dynamic and static radial notches generated via updateRadialGauge -->
+                                </g>
                             </svg>
-                            <!-- Centered Percentage Metric -->
-                            <div class="absolute bottom-2 text-center">
-                                <div id="stat-nx-ratio" class="text-3xl font-extrabold font-mono text-white tracking-tight">83%</div>
-                                <div class="text-[11px] font-medium uppercase tracking-wider text-slate-400 mt-0.5">Exploit Defenses</div>
+                            <!-- Centered Percentage Metric matching reference -->
+                            <div class="absolute bottom-3 text-center">
+                                <div id="stat-nx-ratio" class="text-4xl font-extrabold text-white tracking-tight">50%</div>
+                                <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5">Exploit Defenses</div>
                             </div>
                         </div>
 
@@ -568,13 +574,46 @@
                             </div>
                         </div>
 
-                        <!-- Sinusoidal Waves SVG (Inspired by Cash flow card in reference) -->
-                        <div class="w-full h-24 relative mt-2">
-                            <svg class="w-full h-full" viewBox="0 0 400 90" fill="none">
-                                <path d="M 0 45 C 70 10, 130 10, 200 45 C 270 80, 330 80, 400 45" stroke="rgba(255,255,255,0.8)" stroke-width="2" />
-                                <path d="M 0 55 C 70 25, 130 25, 200 55 C 270 85, 330 85, 400 55" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" />
-                                <path d="M 0 65 C 70 40, 130 40, 200 65 C 270 90, 330 90, 400 65" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+                        <!-- Symmetrical Envelope Spline Waves (Exact match to reference Cash flow chart) -->
+                        <div class="w-full h-28 relative my-2">
+                            <svg class="w-full h-full" viewBox="0 0 420 100" fill="none">
+                                <defs>
+                                    <linearGradient id="pinkEnvelopeGlow" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#FDA4AF" stop-opacity="0.35" />
+                                        <stop offset="50%" stop-color="#F43F5E" stop-opacity="0.1" />
+                                        <stop offset="100%" stop-color="#FDA4AF" stop-opacity="0.35" />
+                                    </linearGradient>
+                                </defs>
+                                <!-- Horizontal Grid Lines -->
+                                <line x1="40" y1="20" x2="410" y2="20" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+                                <line x1="40" y1="50" x2="410" y2="50" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="2,2" />
+                                <line x1="40" y1="80" x2="410" y2="80" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+                                <!-- Left Scale Labels -->
+                                <text x="12" y="24" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">CRIT</text>
+                                <text x="12" y="54" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">HIGH</text>
+                                <text x="12" y="84" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">MED</text>
+
+                                <!-- Filled Ambient Wave Envelope -->
+                                <path d="M 40 50 C 110 15, 170 12, 225 10 C 285 12, 345 15, 410 50 C 345 85, 285 88, 225 90 C 170 88, 110 85, 40 50 Z" fill="url(#pinkEnvelopeGlow)" />
+
+                                <!-- Upper Arching Spline Curves -->
+                                <path d="M 40 50 C 110 15, 170 12, 225 10 C 285 12, 345 15, 410 50" stroke="#FFF" stroke-width="2" style="filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));" />
+                                <path d="M 40 50 C 110 24, 170 20, 225 18 C 285 20, 345 24, 410 50" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" />
+                                <path d="M 40 50 C 110 34, 170 30, 225 28 C 285 30, 345 34, 410 50" stroke="rgba(255,255,255,0.25)" stroke-width="1" />
+
+                                <!-- Lower Inverted Spline Curves -->
+                                <path d="M 40 50 C 110 85, 170 88, 225 90 C 285 88, 345 85, 410 50" stroke="#FFF" stroke-width="2" style="filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));" />
+                                <path d="M 40 50 C 110 76, 170 80, 225 82 C 285 80, 345 76, 410 50" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" />
+                                <path d="M 40 50 C 110 66, 170 70, 225 72 C 285 70, 345 66, 410 50" stroke="rgba(255,255,255,0.25)" stroke-width="1" />
                             </svg>
+                            <!-- Horizontal Month / Stage Labels (Like May, Jun, Jul, Aug, Sep, Oct in reference) -->
+                            <div class="flex justify-between pl-8 pr-2 pt-0.5 text-[9px] font-mono text-rose-200/60 uppercase">
+                                <span>Ingest</span>
+                                <span>Unpack</span>
+                                <span>Audit</span>
+                                <span>Triage</span>
+                                <span>Export</span>
+                            </div>
                         </div>
 
                         <div class="pt-2 border-t border-white/10 flex justify-between items-center text-xs">
@@ -614,17 +653,40 @@
                             </div>
                         </div>
 
-                        <!-- Mini List with Sparkline Curves (Matches reference) -->
-                        <div class="space-y-2.5 font-mono text-xs my-2">
-                            <div class="flex items-center justify-between bg-black/20 p-2 rounded-xl border border-white/5">
-                                <span class="text-slate-200">AWS Access Keys</span>
-                                <svg class="w-16 h-5" viewBox="0 0 60 20" fill="none"><path d="M 0 15 Q 15 5, 30 12 T 60 4" stroke="#FDE047" stroke-width="2" /></svg>
-                                <span class="text-amber-300 font-bold">1 Hit</span>
+                        <!-- Mini List with Sparkline Curves (Exact 3 items matching reference) -->
+                        <div class="space-y-2 font-mono text-xs my-2">
+                            <div class="flex items-center justify-between bg-black/25 px-2.5 py-1.5 rounded-xl border border-white/5">
+                                <div>
+                                    <span class="text-white font-semibold block text-[11px]">AWS Access Keys</span>
+                                    <span class="text-[9px] text-amber-200/70">AKIA... · Critical</span>
+                                </div>
+                                <svg class="w-16 h-5" viewBox="0 0 60 20" fill="none"><path d="M 0 15 Q 15 4, 30 11 T 60 3" stroke="#FDE047" stroke-width="2" style="filter: drop-shadow(0 0 3px rgba(253,224,71,0.6));" /></svg>
+                                <div class="text-right">
+                                    <span class="text-amber-300 font-bold block text-xs">1 Hit</span>
+                                    <span class="text-[9px] text-emerald-400 font-sans">Entropy 4.8</span>
+                                </div>
                             </div>
-                            <div class="flex items-center justify-between bg-black/20 p-2 rounded-xl border border-white/5">
-                                <span class="text-slate-200">Shadow Hashes</span>
-                                <svg class="w-16 h-5" viewBox="0 0 60 20" fill="none"><path d="M 0 10 Q 15 16, 30 8 T 60 14" stroke="#FB923C" stroke-width="2" /></svg>
-                                <span class="text-amber-300 font-bold">1 Hit</span>
+                            <div class="flex items-center justify-between bg-black/25 px-2.5 py-1.5 rounded-xl border border-white/5">
+                                <div>
+                                    <span class="text-white font-semibold block text-[11px]">Shadow Hashes</span>
+                                    <span class="text-[9px] text-amber-200/70">$6$salt... · High</span>
+                                </div>
+                                <svg class="w-16 h-5" viewBox="0 0 60 20" fill="none"><path d="M 0 8 Q 15 18, 30 7 T 60 12" stroke="#FB923C" stroke-width="2" style="filter: drop-shadow(0 0 3px rgba(251,146,60,0.6));" /></svg>
+                                <div class="text-right">
+                                    <span class="text-amber-300 font-bold block text-xs">1 Hit</span>
+                                    <span class="text-[9px] text-emerald-400 font-sans">Masked</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between bg-black/25 px-2.5 py-1.5 rounded-xl border border-white/5">
+                                <div>
+                                    <span class="text-white font-semibold block text-[11px]">Private RSA Keys</span>
+                                    <span class="text-[9px] text-amber-200/70">BEGIN RSA... · High</span>
+                                </div>
+                                <svg class="w-16 h-5" viewBox="0 0 60 20" fill="none"><path d="M 0 12 Q 15 5, 30 14 T 60 6" stroke="#FBBF24" stroke-width="2" style="filter: drop-shadow(0 0 3px rgba(251,191,36,0.6));" /></svg>
+                                <div class="text-right">
+                                    <span class="text-amber-300 font-bold block text-xs">1 Hit</span>
+                                    <span class="text-[9px] text-emerald-400 font-sans">Entropy 5.9</span>
+                                </div>
                             </div>
                         </div>
 
@@ -651,28 +713,35 @@
                             </div>
                         </div>
 
-                        <!-- Pill Capsule Bar Chart (Matches reference Stocks bar chart) -->
-                        <div class="my-4">
-                            <div class="flex items-end justify-between h-28 px-2" aria-label="Mitigation Bars">
+                        <!-- Pill Capsule Bar Chart with Left Scale (Exact match to reference Stocks bar chart) -->
+                        <div class="my-3 flex items-end gap-2">
+                            <!-- Left Y-Axis Scale (Like 4K, 2K, 0K in reference) -->
+                            <div class="flex flex-col justify-between h-28 text-[9px] font-mono text-emerald-200/60 pb-5">
+                                <span>100%</span>
+                                <span>50%</span>
+                                <span>0%</span>
+                            </div>
+                            <!-- 5 Vertical Pill Capsules -->
+                            <div class="flex items-end justify-between h-28 flex-1 px-1" aria-label="Mitigation Bars">
                                 <div class="flex flex-col items-center gap-1.5">
-                                    <div class="w-6 h-24 rounded-full bg-white/90 shadow-[0_0_12px_rgba(255,255,255,0.4)]" title="NX / DEP: 83%"></div>
-                                    <span class="text-[10px] font-mono text-emerald-200">NX</span>
+                                    <div class="w-5 sm:w-6 h-20 rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)]" title="NX / DEP: 83%"></div>
+                                    <span class="text-[10px] font-mono text-emerald-200 font-semibold">NX</span>
                                 </div>
                                 <div class="flex flex-col items-center gap-1.5">
-                                    <div class="w-6 h-14 rounded-full bg-white/50" title="PIE / ASLR: 50%"></div>
+                                    <div class="w-5 sm:w-6 h-12 rounded-full bg-white/50" title="PIE / ASLR: 50%"></div>
                                     <span class="text-[10px] font-mono text-emerald-200">PIE</span>
                                 </div>
                                 <div class="flex flex-col items-center gap-1.5">
-                                    <div class="w-6 h-20 rounded-full bg-white/70" title="RELRO: 100%"></div>
+                                    <div class="w-5 sm:w-6 h-[88px] rounded-full bg-white/80" title="RELRO: 100%"></div>
                                     <span class="text-[10px] font-mono text-emerald-200">REL</span>
                                 </div>
                                 <div class="flex flex-col items-center gap-1.5">
-                                    <div class="w-6 h-14 rounded-full bg-white/50" title="Stack Canaries: 50%"></div>
+                                    <div class="w-5 sm:w-6 h-12 rounded-full bg-white/50" title="Stack Canaries: 50%"></div>
                                     <span class="text-[10px] font-mono text-emerald-200">CAN</span>
                                 </div>
                                 <div class="flex flex-col items-center gap-1.5">
-                                    <!-- Highlighted active pill bar in electric lime matching reference -->
-                                    <div class="w-6 h-26 rounded-full bg-cyber-neon shadow-[0_0_14px_#00FF9D]" title="Overall Hardening"></div>
+                                    <!-- Highlighted active pill bar in electric neon lime matching Friday in reference -->
+                                    <div class="w-5 sm:w-6 h-[104px] rounded-full bg-[#CCFF00] shadow-[0_0_18px_#CCFF00]" title="Target Defense Score"></div>
                                     <span class="text-[10px] font-mono text-white font-bold">ALL</span>
                                 </div>
                             </div>
@@ -1092,6 +1161,39 @@
             });
         }
 
+        
+        function updateRadialGauge(pct) {
+            const ratio = Math.max(0, Math.min(100, pct)) / 100;
+            const g = document.getElementById('tachometer-ticks');
+            if (!g) return;
+            const n = 45;
+            const cx = 110, cy = 115, r1 = 70, r2 = 88;
+            let html = '';
+            for (let i = 0; i < n; i++) {
+                const t = i / (n - 1);
+                const theta = Math.PI * (1.0 - t);
+                const x1 = (cx + r1 * Math.cos(theta)).toFixed(1);
+                const y1 = (cy - r1 * Math.sin(theta)).toFixed(1);
+                const x2 = (cx + r2 * Math.cos(theta)).toFixed(1);
+                const y2 = (cy - r2 * Math.sin(theta)).toFixed(1);
+                
+                let stroke, filter = '';
+                if (t <= ratio) {
+                    if (t <= 0.35) {
+                        stroke = '#FFFFFF';
+                        filter = 'filter: drop-shadow(0 0 3px rgba(255,255,255,0.7));';
+                    } else {
+                        stroke = '#FB923C';
+                        filter = 'filter: drop-shadow(0 0 5px rgba(251,146,60,0.8));';
+                    }
+                } else {
+                    stroke = 'rgba(255, 255, 255, 0.12)';
+                }
+                html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="2.6" stroke-linecap="round" style="${filter}" />`;
+            }
+            g.innerHTML = html;
+        }
+
         async function loadFirmwareDetails(firmwareId) {
             try {
                 // 1. Ingest metadata
@@ -1121,6 +1223,7 @@
                 
                 const nxRatio = summary.total_binaries > 0 ? Math.round((summary.nx_enabled / summary.total_binaries) * 100) : 0;
                 document.getElementById('stat-nx-ratio').textContent = `${nxRatio}%`;
+                updateRadialGauge(nxRatio);
                 document.getElementById('gauge-nx-pct').textContent = `${nxRatio}%`;
 
                 const pieRatio = summary.total_binaries > 0 ? Math.round((summary.pie_enabled / summary.total_binaries) * 100) : 0;

@@ -42,22 +42,33 @@ def run_browser_qa():
         print(f"ERROR: Chrome binary not found at {CHROME_PATH}")
         sys.exit(1)
 
-    # 1. Start Server in Subprocess
-    print("[1/5] Launching FirmwareX server at http://127.0.0.1:8080...")
-    env = os.environ.copy()
-    env["FIRMWAREX_HOST"] = "127.0.0.1"
-    env["FIRMWAREX_PORT"] = "8080"
-    python_exe = sys.executable
-
-    server_proc = subprocess.Popen(
-        [python_exe, "-m", "uvicorn", "firmwarex.api.server:app", "--host", "127.0.0.1", "--port", "8080"],
-        cwd=str(WORKSPACE_DIR),
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-
+    # 1. Start Server in Subprocess if not already running
+    print("[1/5] Checking FirmwareX server status at http://127.0.0.1:8080...")
+    already_running = False
     try:
+        with urllib.request.urlopen("http://127.0.0.1:8080/healthz", timeout=1) as r:
+            if r.status == 200:
+                already_running = True
+                print(" -> Detected existing running FirmwareX server at http://127.0.0.1:8080.")
+    except Exception:
+        already_running = False
+
+    server_proc = None
+    if not already_running:
+        print(" -> Launching FirmwareX server at http://127.0.0.1:8080...")
+        env = os.environ.copy()
+        env["FIRMWAREX_HOST"] = "127.0.0.1"
+        env["FIRMWAREX_PORT"] = "8080"
+        python_exe = sys.executable
+
+        server_proc = subprocess.Popen(
+            [python_exe, "-m", "uvicorn", "firmwarex.api.server:app", "--host", "127.0.0.1", "--port", "8080"],
+            cwd=str(WORKSPACE_DIR),
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
         # Wait for healthz
         ready = wait_for_server("http://127.0.0.1:8080/healthz", timeout=12)
         if not ready:
@@ -67,6 +78,7 @@ def run_browser_qa():
             sys.exit(1)
         print(" -> Server healthy (HTTP 200).")
 
+    try:
         # 2. End-to-End API upload of sample IoT firmware first so dashboard has active data
         print("[2/6] Ingesting sample IoT router firmware for live visualization...")
         sample_path = WORKSPACE_DIR / "samples" / "sample_iot_router.tar.gz"
@@ -202,8 +214,9 @@ def run_browser_qa():
         print("=== BROWSER QA & INTEGRATION TESTS SUCCEEDED ===")
 
     finally:
-        server_proc.terminate()
-        server_proc.wait(timeout=5)
+        if server_proc is not None:
+            server_proc.terminate()
+            server_proc.wait(timeout=5)
 
 
 if __name__ == "__main__":
