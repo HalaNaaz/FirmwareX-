@@ -179,7 +179,7 @@ def test_jffs2_and_ubifs_modular_extractors(tmp_path):
     jffs_ext = Jffs2Extractor()
     assert jffs_ext.can_extract(jffs_file) is True
     res_jffs = jffs_ext.extract(jffs_file, tmp_path / "out_jffs")
-    assert res_jffs.status in (ExtractionStatus.UNSUPPORTED, ExtractionStatus.PARTIAL)
+    assert res_jffs.status in (ExtractionStatus.UNSUPPORTED, ExtractionStatus.PARTIAL, ExtractionStatus.CORRUPTED)
 
     ubi_file = tmp_path / "raw.ubi"
     ubi_file.write_bytes(b"UBI#" + b"\x00" * 60)
@@ -218,3 +218,52 @@ def test_extractor_registry_capabilities_and_offset_extraction(tmp_path):
     assert outcome.status == ExtractionStatus.EXTRACTED
     assert (out_dir / "offset_recovered.txt").exists()
     assert (out_dir / "offset_recovered.txt").read_bytes() == b"DATA_AT_OFFSET_0x1000\n"
+
+
+def test_jffs2_real_extraction_success(tmp_path):
+    """Verify pure-Python JFFS2 extractor recovers real files and contents."""
+    from tests.fixtures_extractors import create_synthetic_jffs2
+
+    jffs_img = tmp_path / "system.jffs2"
+    expected_files = {
+        "etc/shadow": b"root:$6$salt$hash:19000:0:99999:7:::\n",
+        "bin/busybox": b"\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+    }
+    create_synthetic_jffs2(jffs_img, files=expected_files)
+
+    extractor = Jffs2Extractor()
+    assert extractor.can_extract(jffs_img) is True
+
+    out_dir = tmp_path / "out_jffs_real"
+    outcome = extractor.extract(jffs_img, out_dir)
+
+    assert outcome.success is True
+    assert outcome.status == ExtractionStatus.EXTRACTED
+    assert outcome.file_count == 2
+    assert "pure-python" in outcome.tool_version
+
+    # Check extracted file content
+    extracted_shadow = out_dir / "etc/shadow"
+    assert extracted_shadow.exists()
+    assert extracted_shadow.read_bytes() == expected_files["etc/shadow"]
+
+    extracted_busybox = out_dir / "bin/busybox"
+    assert extracted_busybox.exists()
+    assert extracted_busybox.read_bytes() == expected_files["bin/busybox"]
+
+
+def test_jffs2_quota_enforcement(tmp_path):
+    """Verify JFFS2 extractor terminates when quota is exceeded."""
+    from tests.fixtures_extractors import create_synthetic_jffs2
+
+    jffs_img = tmp_path / "quota.jffs2"
+    create_synthetic_jffs2(jffs_img, files={"f1.txt": b"12345", "f2.txt": b"67890"})
+
+    extractor = Jffs2Extractor()
+    out_dir = tmp_path / "out_jffs_quota"
+    tracker = QuotaTracker(max_file_count=1)
+
+    outcome = extractor.extract(jffs_img, out_dir, quota_tracker=tracker)
+    assert outcome.success is False
+    assert outcome.status == ExtractionStatus.FAILED
+    assert any("quota" in e.lower() for e in outcome.errors)

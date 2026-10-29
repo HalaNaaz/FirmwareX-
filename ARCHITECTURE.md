@@ -23,6 +23,7 @@ flowchart TD
         CramfsExt["CramFS Extractor (Pure Python)"]
         TrxExt["Broadcom TRX Partition Slicer"]
         UImageExt["U-Boot uImage Decompressor"]
+        Jffs2Ext["JFFS2 Extractor (Pure Python)"]
         SquashfsExt["SquashFS Inspector / Extractor"]
         SafeExtractor["Safe Extractor (Nested Recursion, Quotas, Zip-Slip Defense)"]
         FileInventory["File Classifier & SHA-256 Provenance Inventory"]
@@ -50,6 +51,7 @@ flowchart TD
     ExtractorRegistry --> CramfsExt
     ExtractorRegistry --> TrxExt
     ExtractorRegistry --> UImageExt
+    ExtractorRegistry --> Jffs2Ext
     ExtractorRegistry --> SquashfsExt
     ExtractorRegistry --> SafeExtractor
     SafeExtractor --> FileInventory
@@ -79,7 +81,8 @@ flowchart TD
 * **Broadcom TRX Extractor (`trx_extractor.py`):** Pure-Python parser for Broadcom `HDR0` containers. Validates lengths and CRC32, extracts bootloader, kernel, and rootfs partitions, and recurses into contained filesystems.
 * **U-Boot uImage Extractor (`uimage_extractor.py`):** Pure-Python parser for legacy U-Boot images (`0x27051956`). Validates header and data CRC checksums and automatically decompresses gzip and bzip2 payloads.
 * **SquashFS Extractor (`squashfs_extractor.py`):** Parses SquashFS 4.0/3.0 superblocks (block sizes, inode counts, compression types). Executes `unsquashfs` under isolation when installed, or reports explicit `UNSUPPORTED` diagnostics when external binaries are missing.
-* **JFFS2 & UBIFS Extractors (`jffs2_ubifs_extractor.py`):** Inspects JFFS2 node headers and UBI eraseblock delimiters, reporting structured diagnostic guidance for `jffs2dump` and `ubireader`.
+* **JFFS2 Extractor (`jffs2_ubifs_extractor.py`):** Pure-Python parser for JFFS2 flash filesystems (LE `0x1985` and BE `0x8519`). Unpacks multi-version `DIRENT` entries and reconstructs `INODE` data chunks (uncompressed and zlib compressed).
+* **UBIFS Extractor (`jffs2_ubifs_extractor.py`):** Inspects UBI eraseblock delimiters (`UBI#`) and UBIFS node headers (`0x06101831`), reporting structured diagnostic guidance and tool availability.
 
 ### 2.2 Safe Archive Unpacking & Ingestion (`unpacker.py`, `raw_detector.py`)
 * **Zip Slip Defense:** Every entry's canonical destination path is resolved and verified against the sandbox root (`target.resolve() == base or base in target.resolve().parents`).

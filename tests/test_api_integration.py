@@ -210,3 +210,37 @@ def test_upload_and_extraction_cramfs_firmware(tmp_path):
     assert fs_resp.status_code == 200
     files = [item["path"] for item in fs_resp.json()["files"]]
     assert any("etc_shadow" in p for p in files)
+
+
+def test_upload_and_extraction_jffs2_firmware(tmp_path):
+    """Verify that a JFFS2 flash firmware image uploads, extracts via pure-Python, and completes analysis."""
+    from tests.fixtures_extractors import create_synthetic_jffs2
+    from tests.fixtures_helper import create_minimal_elf
+
+    elf_bytes = create_minimal_elf("arm", bitness=32, endianness="little")
+    jffs_img = tmp_path / "firmware.jffs2"
+    create_synthetic_jffs2(
+        jffs_img,
+        files={
+            "bin_service": elf_bytes,
+            "etc_shadow": b"admin:$6$rounds=5000$salt$hash:19000:0:99999:7:::\n",
+        },
+    )
+
+    with open(jffs_img, "rb") as f:
+        resp = client.post(
+            "/api/v1/firmware/upload",
+            files={"file": ("firmware.jffs2", f, "application/octet-stream")},
+        )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "completed"
+    assert data["file_count"] >= 2
+    fw_id = data["firmware_id"]
+
+    # Verify filesystem route
+    fs_resp = client.get(f"/api/v1/firmware/{fw_id}/filesystem")
+    assert fs_resp.status_code == 200
+    files = [item["path"] for item in fs_resp.json()["files"]]
+    assert any("etc_shadow" in p for p in files)

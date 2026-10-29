@@ -184,3 +184,4 @@ class TrxExtractor(BaseExtractor):
                 errors=[f"TRX parsing failed: {e!s}"],
                 diagnostics=diagnostics,
             )
+

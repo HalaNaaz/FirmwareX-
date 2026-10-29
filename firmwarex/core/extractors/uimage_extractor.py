@@ -281,3 +281,4 @@ class UImageExtractor(BaseExtractor):
                 errors=[f"uImage parsing failed: {e!s}"],
                 diagnostics=diagnostics,
             )
+

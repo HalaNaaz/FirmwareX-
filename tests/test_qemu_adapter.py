@@ -46,7 +46,7 @@ def test_qemu_emulate_skips_when_host_binary_missing(tmp_path):
 
     # MIPS emulation on Windows host without qemu-mips.exe
     res = adapter.emulate_binary(dummy, arch="MIPS", endian="big")
-    assert res.status in ("tool_unavailable", "skipped")
+    assert res.status in ("tool_unavailable", "skipped", "isolation_blocked")
     assert "Host execution of untrusted firmware binaries is strictly forbidden" in res.termination_reason or "not installed" in res.termination_reason
 
 

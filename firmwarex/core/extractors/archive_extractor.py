@@ -167,3 +167,4 @@ class ArchiveExtractor(BaseExtractor):
                 errors=[f"Archive extraction failed: {e!s}"],
                 diagnostics=diagnostics,
             )
+

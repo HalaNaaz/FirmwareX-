@@ -247,3 +247,84 @@ def create_synthetic_uimage(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(hdr_final + payload_bytes)
     return output_path
+
+
+
+def create_synthetic_jffs2(
+    output_path: Path,
+    files: dict[str, bytes] | None = None,
+    endian: str = "<",
+) -> Path:
+    """Create a minimal, valid, spec-compliant JFFS2 flash filesystem image.
+
+    Creates:
+    - Dirent nodes for each entry (DIRENT 0xe001)
+    - Inode nodes containing data (INODE 0xe002) compressed with zlib
+    """
+    if files is None:
+        files = {
+            "etc/shadow": b"admin:$6$rounds=5000$salt$hash:19000:0:99999:7:::\n",
+            "bin/busybox": b"\x7fELF\x01\x01\x01\x00" + b"\x00" * 40,
+        }
+
+    def crc(data: bytes) -> int:
+        return binascii.crc32(data) & 0xFFFFFFFF
+
+    buf = bytearray()
+    magic = 0x1985 if endian == "<" else 0x8519
+    ino = 2
+
+    for name_str, content in files.items():
+        name_bytes = name_str.encode("utf-8")
+        nsize = len(name_bytes)
+
+        # 1. Dirent node
+        # pino=1 (root), version=1, ino=ino, mctime=0, nsize=nsize, type=8 (REG), unused=0
+        d_fields = struct.pack(f"{endian}IIIIBBH", 1, 1, ino, 0, nsize, 8, 0)
+        d_node_crc = crc(d_fields)
+        d_data_crc = crc(name_bytes)
+        d_raw = d_fields + struct.pack(f"{endian}II", d_node_crc, d_data_crc) + name_bytes
+        pad_d = (4 - (len(d_raw) % 4)) % 4
+        d_raw += b"\x00" * pad_d
+        d_totlen = 12 + len(d_raw)
+        d_hdr_init = struct.pack(f"{endian}HHI", magic, 0xE001, d_totlen)
+        d_hdr = d_hdr_init + struct.pack(f"{endian}I", crc(d_hdr_init))
+        buf.extend(d_hdr + d_raw)
+
+        # 2. Inode node
+        cdata = zlib.compress(content)
+        csize = len(cdata)
+        dsize = len(content)
+        i_fields = struct.pack(
+            f"{endian}IIIHHIIIIIIIBBH",
+            ino,
+            1,
+            0o100644,
+            0,
+            0,
+            dsize,
+            0,
+            0,
+            0,
+            0,
+            csize,
+            dsize,
+            6,
+            0,
+            0,
+        )
+        i_data_crc = crc(cdata)
+        i_node_crc = crc(i_fields)
+        i_raw = i_fields + struct.pack(f"{endian}II", i_data_crc, i_node_crc) + cdata
+        pad_i = (4 - (len(i_raw) % 4)) % 4
+        i_raw += b"\x00" * pad_i
+        i_totlen = 12 + len(i_raw)
+        i_hdr_init = struct.pack(f"{endian}HHI", magic, 0xE002, i_totlen)
+        i_hdr = i_hdr_init + struct.pack(f"{endian}I", crc(i_hdr_init))
+        buf.extend(i_hdr + i_raw)
+
+        ino += 1
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(bytes(buf))
+    return output_path

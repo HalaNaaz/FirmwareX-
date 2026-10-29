@@ -4,7 +4,7 @@ In accordance with PRD Sections 4.2, 6, 11, and 14, this document outlines expli
 
 ---
 
-## 1. Modular Firmware Filesystem Extraction (Phase 4)
+## 1. Modular Firmware Filesystem Extraction (Phase 5 Status)
 
 ### Implemented & Tested Extractors:
 FirmwareX provides a modular extractor registry (`ExtractorRegistry`) with native and container-isolated extractors:
@@ -12,11 +12,12 @@ FirmwareX provides a modular extractor registry (`ExtractorRegistry`) with nativ
 * **CramFS (Pure Python):** Complete native decompressor (`CramfsExtractor`) supporting little-endian (`0x28cd3d45`) and big-endian (`0x453dcd28`) variants, recursive directory trees, zlib decompression, and path containment.
 * **Broadcom TRX:** Native partition splitter (`TrxExtractor`) parsing `HDR0` headers, validating CRC32, slicing kernel/rootfs partitions, and recursing into embedded filesystem layers.
 * **U-Boot uImage:** Native legacy OS image parser (`UImageExtractor`) validating 64-byte `IH_MAGIC` (`0x27051956`), header/data CRCs, and automatically decompressing gzip and bzip2 payloads.
+* **JFFS2 Flash Filesystem (Pure Python):** Complete native decompressor (`Jffs2Extractor`) parsing little-endian (`0x1985`) and big-endian (`0x8519`) node headers, traversing `DIRENT` structures, reassembling multi-chunk `INODE` contents (uncompressed and zlib compressed), and strictly enforcing directory traversal and quota boundaries.
 * **Offset-Based Extraction:** Scans payload offsets up to 10 MB to discover and unpack embedded filesystems located behind proprietary bootloader padding.
 
-### Explicit Operational Boundaries (SquashFS, JFFS2, UBIFS):
+### Explicit Operational Boundaries (SquashFS, UBIFS):
 * **SquashFS:** FirmwareX parses SquashFS 4.0/3.0 superblocks (verifying block size, inode counts, and compression algorithms). Full extraction requires external binaries (`unsquashfs` or `sasquatch`). When external utilities are absent from the host or container, FirmwareX honestly returns **`UNSUPPORTED`** with detailed superblock diagnostics and recommended tools. It **never falsely claims extraction** based merely on signature detection.
-* **JFFS2 & UBIFS:** Node headers and eraseblock delimiters are validated. Full node reconstruction requires `jffs2dump` or `ubireader`. In their absence, FirmwareX returns structured diagnostic failure states.
+* **UBIFS:** Eraseblock delimiters (`UBI#`) and node headers (`0x06101831`) are validated. Full node reconstruction requires `ubireader`. In its absence, FirmwareX returns structured diagnostic failure states.
 
 ---
 
@@ -49,13 +50,14 @@ FirmwareX provides a modular extractor registry (`ExtractorRegistry`) with nativ
 
 ---
 
-## 4. Defensive Protocol Fuzzing Foundation (Phase 4)
+## 4. Defensive Protocol Fuzzing Foundation (Phase 5)
 
 ### Implemented Capabilities:
 * **Loopback Safety Enforcement:** Fuzzing targets must strictly resolve to `127.0.0.1` or `localhost`. Any request targeting external networks or non-local IP addresses is rejected fail-closed with `PermissionError`.
 * **Multi-Protocol Support:** Modular support for HTTP, UPnP (SSDP M-SEARCH), and MQTT (3.1.1 CONNECT and PUBLISH packets).
 * **Deterministic Mutations:** Seeded pseudo-random mutations covering oversized headers, format string specifiers (`%s%n`), integer boundary numbers (`2147483647`, `-1`), path traversals, null-bytes, and malformed delimiters.
 * **Synthetic In-Process Test Harness (`SyntheticLocalTestServer`):** In-process loopback server for testing fuzzer detection of 500 errors, connection drops, and anomaly classification end-to-end.
+* **Connection Error & Timeout Resilience:** Fully verified handling of closed/unresponsive ports without unhandled exceptions.
 
 ---
 
@@ -64,7 +66,7 @@ FirmwareX provides a modular extractor registry (`ExtractorRegistry`) with nativ
 | Feature | PRD Reference | Implementation Status | Technical Rationale & Evidence |
 | :--- | :--- | :--- | :--- |
 | **Raw Firmware Signature Detection** | PRD Section 6.1 | **Implemented & Tested** | Multi-offset scanning for SquashFS, CramFS, JFFS2, UBIFS, TRX, uImage, DTB. |
-| **Modular Filesystem Extractors** | PRD Section 6.1 | **Implemented & Tested** | Pure-Python CramFS, TRX, and uImage extractors; tested with synthetic images. |
+| **Modular Filesystem Extractors** | PRD Section 6.1 | **Implemented & Tested** | Pure-Python CramFS, TRX, uImage, and JFFS2 extractors; tested with synthetic images. |
 | **Nested Archive Ingestion** | PRD Section 6.1 | **Implemented & Tested** | Recursive extraction up to 3 layers with cumulative quotas and provenance. |
 | **Containment Preflight & Isolation** | PRD Section 11 | **Implemented & Tested** | Live Docker verification enforcing `--network none`, `--read-only`, zero host execution. |
 | **Disposable Container Execution** | PRD Section 11 | **Implemented & Tested** | `DisposableSandbox.execute_isolated_command` with argument lists and timeout bounds. |

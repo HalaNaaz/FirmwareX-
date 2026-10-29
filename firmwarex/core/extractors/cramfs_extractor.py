@@ -338,3 +338,4 @@ class CramfsExtractor(BaseExtractor):
                     unpacked_chunks.append(compressed_chunk[:expected_size])
 
         return b"".join(unpacked_chunks)[:size]
+

@@ -106,3 +106,4 @@ class BaseExtractor(ABC):
         quota_tracker: QuotaTracker | None = None,
     ) -> ExtractionOutcome:
         """Safely extract contents into output_dir enforcing quotas and containment."""
+

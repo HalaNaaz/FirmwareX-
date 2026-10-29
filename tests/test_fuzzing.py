@@ -96,6 +96,7 @@ def test_api_extractor_capabilities():
     assert "trx" in format_ids
     assert "uimage" in format_ids
     assert "squashfs" in format_ids
+    assert "jffs2" in format_ids
 
 
 def test_api_fuzzing_test_endpoint():
@@ -108,3 +109,46 @@ def test_api_fuzzing_test_endpoint():
     assert data["protocol"] == "http"
     assert data["total_iterations"] == 10
     assert data["seed"] == 99
+
+
+
+def test_fuzzer_rejects_various_non_loopback_ips():
+    """Verify safety boundary blocks private and public non-loopback addresses."""
+    for bad_ip in ["192.168.1.1", "10.0.0.1", "172.16.0.100", "8.8.8.8", "example.com"]:
+        cfg = FuzzConfig(target_host=bad_ip, protocol=FuzzProtocol.HTTP)
+        runner = ProtocolFuzzRunner(cfg)
+        with pytest.raises(PermissionError) as exc_info:
+            runner.run_fuzzing_session()
+        assert "safety boundary violation" in str(exc_info.value).lower()
+
+
+def test_fuzzer_handles_service_shutdown_and_connection_error():
+    """Verify fuzzer handles unavailable or closed ports gracefully without unhandled exceptions."""
+    # Port 59999 is unbound/closed
+    cfg = FuzzConfig(
+        target_host="127.0.0.1",
+        target_port=59999,
+        protocol=FuzzProtocol.HTTP,
+        max_iterations=3,
+        seed=10,
+        timeout_seconds=0.5,
+    )
+    runner = ProtocolFuzzRunner(cfg)
+    report = runner.run_fuzzing_session()
+    assert report.status == "completed"
+    assert report.total_iterations == 3
+    # All attempts to closed port should record connection_refused anomaly
+    assert report.anomalies_detected == 3
+    for a in report.anomalies:
+        assert a.anomaly_type == "connection_refused"
+
+
+def test_protocol_mutator_bounds():
+    """Verify ProtocolMutator respects maximum payload limits."""
+    mutator = ProtocolMutator(seed=777)
+    for _ in range(20):
+        _, headers, body, _ = mutator.mutate_http("/")
+        assert len(body) <= 1024
+        for k, v in headers.items():
+            assert len(str(k)) <= 512
+            assert len(str(v)) <= 4096

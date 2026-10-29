@@ -109,7 +109,7 @@ def detect_format_detailed(file_path: Path) -> tuple[str, bool, list[DetectedSig
         if fmt_id == "xz" and any(file_name.endswith(ext) for ext in [".tar.xz", ".txz"]):
             return "xz_tar", True, signatures
         # CramFS, TRX, and uImage are supported by modular extractors in Phase 4
-        if fmt_id in ("cramfs", "trx", "uimage"):
+        if fmt_id in ("cramfs", "trx", "uimage", "jffs2"):
             return fmt_id, True, signatures
         return fmt_id, is_supported, signatures
 
@@ -234,7 +234,7 @@ class SafeExtractor:
                 result = self._extract_zip(archive_path, resolved_out, nesting_level=0, parent="root")
             elif fmt in ("tar", "gzip_tar", "bzip2_tar", "xz_tar", "gzip", "bzip2", "xz"):
                 result = self._extract_tar(archive_path, resolved_out, nesting_level=0, parent="root")
-            elif fmt in ("cramfs", "trx", "uimage"):
+            elif fmt in ("cramfs", "trx", "uimage", "jffs2", "squashfs"):
                 from firmwarex.core.extractors.base import ExtractionStatus, SecurityViolationError
                 from firmwarex.core.extractors.registry import ExtractorRegistry
                 try:

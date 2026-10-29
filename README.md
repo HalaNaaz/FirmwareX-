@@ -3,7 +3,9 @@
 > [!NOTE]
 > **Project Scope Notice:** FirmwareX is an independent cybersecurity research and engineering project designed according to the technical requirements in the `Project Unit42-FirmwareX` Product Requirements Document (PRD). It is not officially affiliated with or endorsed by Palo Alto Networks or Unit 42.
 
-FirmwareX delivers an automated security analysis pipeline designed to audit IoT and embedded device firmware images. It performs safe multi-layer extraction, raw signature scanning, modular filesystem extraction (CramFS, TRX, uImage, SquashFS), rootfs file inventory, cross-architecture ELF binary hardening audits, secret scanning with mandatory cryptographic redaction, bounded static taint analysis, live containerized isolation preflights, defensive protocol fuzzing, and normalised finding exports conforming to PRD Appendix A.
+FirmwareX delivers an automated security analysis pipeline designed to audit IoT and embedded device firmware images. It performs safe multi-layer extraction, raw signature scanning, modular filesystem extraction (CramFS, Broadcom TRX, U-Boot uImage, JFFS2 flash filesystem, SquashFS), rootfs file inventory, cross-architecture ELF binary hardening audits, secret scanning with mandatory cryptographic redaction, bounded static taint analysis, live containerized isolation preflights, defensive protocol fuzzing, and normalised finding exports conforming to PRD Appendix A.
+
+* **Repository:** [https://github.com/HalaNaaz/FirmwareX-.git](https://github.com/HalaNaaz/FirmwareX-.git)
 
 ---
 
@@ -47,7 +49,7 @@ This generates `samples/sample_iot_router.tar.gz` containing synthetic MIPS and 
 ### Option A: Upload via SOC Command Center
 1. Navigate to `http://127.0.0.1:8080/`.
 2. Select **Firmware Ingestion** from the navigation tabs.
-3. Drag and drop `samples/sample_iot_router.tar.gz` (or a supported CramFS / TRX image) into the upload dropzone.
+3. Drag and drop `samples/sample_iot_router.tar.gz` (or a supported CramFS, JFFS2, or TRX image) into the upload dropzone.
 4. Click **Ingest & Run Pipeline**. The real-time terminal feed displays streaming progress: format validation, safe decompression, binary audits, and finding triage.
 
 ### Option B: Upload via cURL / PowerShell
@@ -87,21 +89,23 @@ Run the full automated test suite with coverage measurement across all modules:
 .\.venv\Scripts\python.exe -m pytest -v --cov=firmwarex
 ```
 
-### Verified Test Suite Breakdown (82 Tests Total — 100% Pass Rate):
-* **Modular Filesystem Extractors (`test_extractors.py` — 10 tests):**
+### Verified Test Suite Breakdown (88 Tests Total):
+* **Modular Filesystem Extractors (`test_extractors.py` — 12 tests):**
   - Pure-Python CramFS: LE/BE superblock parsing, zlib decompression, directory trees, corrupted header handling, quota enforcement.
   - Broadcom TRX: `HDR0` validation, partition slicing, CRC32 checks, corrupted container handling.
   - U-Boot uImage: `0x27051956` magic validation, header/data CRCs, gzip decompression, corrupted payload handling.
-  - SquashFS & JFFS2/UBIFS: Superblock inspection, honest `UNSUPPORTED` state without external binaries, offset-based embedded recovery.
+  - Pure-Python JFFS2: Little/Big Endian node parsing, DIRENT traversal, INODE chunk reassembly (zlib and raw), corrupted node recovery, quota enforcement.
+  - SquashFS & UBIFS: Superblock inspection, honest `UNSUPPORTED` state without external binaries, offset-based embedded recovery.
 * **Disposable Containment & Isolation (`test_live_containment.py` & `test_containment_isolation.py` — 10 tests):**
   - Command argument-list enforcement (rejects shell string interpolation).
   - Strict host mount path isolation (rejection of system root, `.ssh`, `docker.sock`).
   - Disposable sandbox scratch directory guaranteed cleanup.
   - Live Docker container execution with `--network none` (verified network unreachable), `--read-only` rootfs, and non-root execution (`UID 1000`).
-* **Defensive Protocol Fuzzing (`test_fuzzing.py` — 5 tests):**
-  - Loopback safety enforcement: strictly rejects external IPs (e.g. `192.168.1.1`).
-  - Protocol mutator: HTTP, UPnP SSDP, and MQTT 3.1.1 packet generation.
+* **Defensive Protocol Fuzzing (`test_fuzzing.py` — 8 tests):**
+  - Loopback safety enforcement: strictly rejects external and private non-loopback IPs (`192.168.1.1`, `10.0.0.1`, `8.8.8.8`).
+  - Protocol mutator: HTTP, UPnP SSDP, and MQTT 3.1.1 packet generation with size bounding.
   - `SyntheticLocalTestServer`: loopback in-process server verifying anomaly classification (500 errors, connection drops).
+  - Connection error and service shutdown handling: verifies graceful handling of closed/unresponsive ports without unhandled exceptions.
   - API endpoint verification for `/api/v1/extractors/capabilities` and `/api/v1/fuzzing/test`.
 * **Bounded Static Taint Analysis (`test_symbolic_extended.py` & `test_symbolic_analyzer.py` — 8 tests):**
   - Deduplicated `REVIEW_LEAD` generation linking input sources to dangerous sinks.
@@ -117,10 +121,10 @@ Run the full automated test suite with coverage measurement across all modules:
   - NX/DEP detection (`PT_GNU_STACK`), Full & Partial RELRO (`PT_GNU_RELRO` & `BIND_NOW`), PIE detection (`ET_DYN` vs `ET_EXEC`), MIPS big-endian, ARM little-endian, ARM64/AArch64, x86_64, relocatable object files (`ET_REL`), truncated headers, and non-ELF handling.
 * **Secret & Crypto Redaction (`test_secret_redactor.py` — 4 tests):**
   - AWS key masking, Shannon entropy calculations ($H > 4.5$), password assignment detection, shadow database matching, zero plaintext persistence.
-* **API, Persistence & Dashboard (`test_api_integration.py` — 11 tests):**
-  - End-to-end ingestion pipeline, report retrieval, SQLite transactions, audit logging (`audit_log.jsonl`), HTML5 SOC Command Center rendering, and CramFS firmware upload.
+* **API, Persistence & Dashboard (`test_api_integration.py` — 12 tests):**
+  - End-to-end ingestion pipeline, report retrieval, SQLite transactions, audit logging (`audit_log.jsonl`), HTML5 SOC Command Center rendering, CramFS firmware upload, and JFFS2 firmware upload.
 * **QEMU Emulation Adapter (`test_qemu_adapter.py` — 5 tests):**
-  - Architecture mapping (MIPS-BE, MIPS-LE, ARM, ARMEB, AArch64, x86_64), unavailable tool handling (`tool_unavailable`), and mock diagnostic scenarios.
+  - Architecture mapping (MIPS-BE, MIPS-LE, ARM, ARMEB, AArch64, x86_64), fail-closed isolation checks (`isolation_blocked`), unavailable tool handling (`tool_unavailable`), and mock diagnostic scenarios.
 
 ---
 

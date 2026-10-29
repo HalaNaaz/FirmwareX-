@@ -87,3 +87,4 @@ class SyntheticLocalTestServer:
             self.server.server_close()
         if self.thread and self.thread.is_alive():
             self.thread.join(timeout=2)
+
