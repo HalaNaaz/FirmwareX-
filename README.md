@@ -89,13 +89,13 @@ Run the full automated test suite with coverage measurement across all modules:
 .\.venv\Scripts\python.exe -m pytest -v --cov=firmwarex
 ```
 
-### Verified Test Suite Breakdown (88 Tests Total):
-* **Modular Filesystem Extractors (`test_extractors.py` — 12 tests):**
+### Verified Test Suite Breakdown (94 Tests Total):
+* **Modular Filesystem Extractors (`test_extractors.py` & `test_phase8_analysis_integrity.py` — 18 tests):**
   - Pure-Python CramFS: LE/BE superblock parsing, zlib decompression, directory trees, corrupted header handling, quota enforcement.
   - Broadcom TRX: `HDR0` validation, partition slicing, CRC32 checks, corrupted container handling.
   - U-Boot uImage: `0x27051956` magic validation, header/data CRCs, gzip decompression, corrupted payload handling.
   - Pure-Python JFFS2: Little/Big Endian node parsing, DIRENT traversal, INODE chunk reassembly (zlib and raw), corrupted node recovery, quota enforcement.
-  - SquashFS & UBIFS: Superblock inspection, honest `UNSUPPORTED` state without external binaries, offset-based embedded recovery.
+  - SquashFS & UBIFS: Superblock inspection, PySquashfsImage and ubireader tool discovery, safe execution bounds, and corrupted stream recovery.
 * **Disposable Containment & Isolation (`test_live_containment.py` & `test_containment_isolation.py` — 10 tests):**
   - Command argument-list enforcement (rejects shell string interpolation).
   - Strict host mount path isolation (rejection of system root, `.ssh`, `docker.sock`).
