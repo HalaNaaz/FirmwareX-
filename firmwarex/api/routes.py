@@ -417,6 +417,8 @@ async def get_firmware_symbolic(firmware_id: str):
 
 
 @api_router.get("/firmware/{firmware_id}/report")
+@api_router.get("/firmware/{firmware_id}/export")
+@api_router.get("/reports/{firmware_id}/export")
 async def get_report(firmware_id: str):
     """Export complete, verifiable JSON security report for compliance and audit."""
     fw = storage.get_firmware(firmware_id)

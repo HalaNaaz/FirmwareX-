@@ -19,6 +19,7 @@
   "confidence": "probable",
   "evidence_ref": "41a7b82f0c728e93d8b3c1097e889b910e531fa4a20516ef06e0018a3a290e21",
   "redacted": true,
+  "remediation": "Remove plaintext credential from the firmware image. Store keys in a hardware secure element (e.g., TPM, Secure Enclave) or provision credentials dynamically via encrypted configuration at boot.",
   "status": "new",
   "detected_at": "2026-10-28T15:45:00.000000+00:00",
   "details": {
@@ -27,4 +28,3 @@
     "description": "Hardcoded AWS Access Key identifier."
   }
 }
-

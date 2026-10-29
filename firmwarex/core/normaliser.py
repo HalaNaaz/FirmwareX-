@@ -18,7 +18,18 @@ class FindingNormaliser:
 
     @staticmethod
     def from_secret_finding(finding: SecretFinding, firmware_id: str) -> dict[str, Any]:
-        """Convert a SecretFinding into an Appendix A compliant dictionary."""
+        """Convert a SecretFinding into an Appendix A compliant dictionary with remediation guidance."""
+        if finding.category == "hardcoded_secret":
+            remediation = (
+                "Remove plaintext credential from the firmware image. Store keys in a hardware secure element "
+                "(e.g., TPM, Secure Enclave) or provision credentials dynamically via encrypted configuration at boot."
+            )
+        else:
+            remediation = (
+                "Replace legacy or weak cryptographic hashing (MD5/DES) with salted SHA-512 ($6$) with >=50,000 rounds, "
+                "Argon2id, or yescrypt."
+            )
+
         return {
             "vulnerability_id": str(uuid.uuid4()),
             "firmware_id": firmware_id,
@@ -40,6 +51,7 @@ class FindingNormaliser:
             "confidence": finding.confidence,
             "evidence_ref": finding.evidence_ref,
             "redacted": finding.redacted,
+            "remediation": remediation,
             "status": "new",
             "detected_at": current_rfc3339_utc(),
             "details": {
@@ -77,6 +89,7 @@ class FindingNormaliser:
                 "confidence": "probable",
                 "evidence_ref": "elf:pt_gnu_stack_missing_or_executable",
                 "redacted": False,
+                "remediation": "Compile binary with '-z noexecstack'. Ensure target Linux kernel enforces non-executable memory protections (CONFIG_STRICT_DEVMEM / NX).",
                 "status": "new",
                 "detected_at": current_rfc3339_utc(),
                 "details": {
@@ -109,6 +122,7 @@ class FindingNormaliser:
                 "confidence": "probable",
                 "evidence_ref": "elf:pie_disabled",
                 "redacted": False,
+                "remediation": "Compile and link with '-fPIE -pie' to enable position-independent execution and maximize kernel ASLR entropy.",
                 "status": "new",
                 "detected_at": current_rfc3339_utc(),
                 "details": {
@@ -141,6 +155,7 @@ class FindingNormaliser:
                 "confidence": "probable",
                 "evidence_ref": "elf:relro_disabled",
                 "redacted": False,
+                "remediation": "Compile with '-Wl,-z,relro,-z,now' (Full RELRO) to make the Global Offset Table read-only after dynamic linking.",
                 "status": "new",
                 "detected_at": current_rfc3339_utc(),
                 "details": {
@@ -157,6 +172,10 @@ class FindingNormaliser:
             category = "command_injection" if is_cmd_inj else "memory_corruption"
             cwe = "CWE-78" if is_cmd_inj else ("CWE-134" if "sprintf" in sink_name else "CWE-120")
             risk = "medium" if is_cmd_inj else "low"
+            if is_cmd_inj:
+                remediation = "Replace system() and popen() invocations with execve() or posix_spawn() passing discrete argument arrays, avoiding shell interpolation."
+            else:
+                remediation = "Replace unbounded libc string functions with safe alternatives (snprintf(), strlcpy(), or bounds-checked string abstractions) and enable FORTIFY_SOURCE (-D_FORTIFY_SOURCE=2)."
 
             findings.append({
                 "vulnerability_id": str(uuid.uuid4()),
@@ -179,6 +198,7 @@ class FindingNormaliser:
                 "confidence": "heuristic",
                 "evidence_ref": f"symbol_import:{sink_info['symbol']}",
                 "redacted": False,
+                "remediation": remediation,
                 "status": "new",
                 "detected_at": current_rfc3339_utc(),
                 "details": {
@@ -189,4 +209,3 @@ class FindingNormaliser:
             })
 
         return findings
-
