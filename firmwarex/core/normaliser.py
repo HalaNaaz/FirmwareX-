@@ -6,6 +6,7 @@ from typing import Any
 
 from firmwarex.core.elf_auditor import BinaryAuditReport
 from firmwarex.core.secret_scanner import SecretFinding
+from firmwarex.core.symbolic_analyzer import SymbolicReviewLead
 
 
 def current_rfc3339_utc() -> str:
@@ -209,3 +210,88 @@ class FindingNormaliser:
             })
 
         return findings
+
+
+    @staticmethod
+    def from_symbolic_lead(
+        lead: SymbolicReviewLead, firmware_id: str, architecture: str | None = None
+    ) -> dict[str, Any]:
+        """Convert a SymbolicReviewLead into an Appendix A compliant finding."""
+        is_cmd = lead.sink_symbol in ("system", "popen", "execl", "execve")
+        if is_cmd:
+            remediation = "Replace command execution with posix_spawn() or execve() using discrete argument arrays, avoiding shell interpolation."
+        elif "sprintf" in lead.sink_symbol:
+            remediation = "Replace sprintf with snprintf specifying maximum destination buffer size."
+        else:
+            remediation = "Replace unbounded memory copy with bounds-checked alternatives and enable compiler stack canaries."
+
+        return {
+            "vulnerability_id": str(uuid.uuid4()),
+            "firmware_id": firmware_id,
+            "binary": lead.binary_path,
+            "architecture": architecture,
+            "category": lead.category,
+            "cwe": lead.cwe_id,
+            "address": None,
+            "sink": lead.sink_symbol,
+            "source": lead.source_symbol,
+            "tainted_path": lead.tainted_path or [lead.source_symbol, lead.sink_symbol],
+            "crash_state": {
+                "fault_address": None,
+                "registers": None,
+                "overflow_offset": None,
+                "stack_hash": None,
+            },
+            "risk_rating": "medium" if is_cmd else "low",
+            "confidence": lead.confidence,
+            "evidence_ref": f"taint_path:{lead.source_symbol}->{lead.sink_symbol}",
+            "redacted": False,
+            "remediation": remediation,
+            "status": "new",
+            "detected_at": current_rfc3339_utc(),
+            "details": {
+                "type": f"Taint Reachability Lead: {lead.source_symbol} -> {lead.sink_symbol}",
+                "preview": lead.evidence,
+                "description": f"Potential data flow from input '{lead.source_symbol}' to dangerous sink '{lead.sink_symbol}'.",
+                "reaching_condition": getattr(lead, "reaching_condition", None),
+                "limitations": lead.limitations,
+            },
+        }
+
+    @staticmethod
+    def from_dynamic_crash(
+        crash_rep: Any, firmware_id: str, binary: str, arch: str | None = None
+    ) -> dict[str, Any]:
+        """Convert a CrashReport or dictionary into an Appendix A compliant finding."""
+        c = crash_rep if isinstance(crash_rep, dict) else crash_rep.to_dict()
+        return {
+            "vulnerability_id": str(uuid.uuid4()),
+            "firmware_id": firmware_id,
+            "binary": binary,
+            "architecture": arch,
+            "category": "dynamic_crash",
+            "cwe": c.get("candidate_cwe", "CWE-119"),
+            "address": c.get("fault_address"),
+            "sink": c.get("signal"),
+            "source": "dynamic_emulation",
+            "tainted_path": [],
+            "crash_state": {
+                "fault_address": c.get("fault_address"),
+                "registers": c.get("registers"),
+                "overflow_offset": c.get("overflow_offset"),
+                "stack_hash": c.get("stack_hash"),
+            },
+            "risk_rating": c.get("risk_rating", "high"),
+            "confidence": c.get("confidence", "confirmed"),
+            "evidence_ref": f"crash:{c.get('signal')}:{c.get('stack_hash')}",
+            "redacted": False,
+            "remediation": c.get("remediation", "Investigate process fault using debugger and ASan."),
+            "status": "new",
+            "detected_at": current_rfc3339_utc(),
+            "details": {
+                "type": f"Dynamic Process Crash ({c.get('signal')})",
+                "preview": c.get("diagnostic_summary"),
+                "description": c.get("diagnostic_summary"),
+                "trace": c.get("trace", []),
+            },
+        }
