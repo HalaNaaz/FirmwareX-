@@ -56,6 +56,10 @@ class BinaryAuditReport:
     elf_type: str = "unknown"
     is_stripped: bool = False
     is_static: bool = False
+    interpreter: str | None = None
+    rpath: str | None = None
+    runpath: str | None = None
+    symbol_count: int = 0
     nx: MitigationStatus = field(default_factory=lambda: MitigationStatus("unknown", "Not analysed"))
     pie: MitigationStatus = field(default_factory=lambda: MitigationStatus("unknown", "Not analysed"))
     relro: MitigationStatus = field(default_factory=lambda: MitigationStatus("unknown", "Not analysed"))
@@ -75,6 +79,10 @@ class BinaryAuditReport:
             "elf_type": self.elf_type,
             "is_stripped": self.is_stripped,
             "is_static": self.is_static,
+            "interpreter": self.interpreter,
+            "rpath": self.rpath,
+            "runpath": self.runpath,
+            "symbol_count": self.symbol_count,
             "nx": asdict(self.nx),
             "pie": asdict(self.pie),
             "relro": asdict(self.relro),
@@ -162,6 +170,25 @@ class ELFAuditor:
         # Check if relocatable object (ET_REL) where program headers are not yet linked
         is_relocatable = (e_type == "ET_REL")
         dynamic_sec = elf.get_section_by_name(".dynamic")
+
+        interpreter = None
+        for segment in elf.iter_segments():
+            if segment.header.p_type == "PT_INTERP":
+                try:
+                    interp_data = segment.data()
+                    interpreter = interp_data.rstrip(b"\x00").decode("utf-8", errors="replace")
+                except Exception:
+                    pass
+                break
+
+        rpath = None
+        runpath = None
+        if dynamic_sec:
+            for tag in dynamic_sec.iter_tags():
+                if tag.entry.d_tag == "DT_RPATH":
+                    rpath = getattr(tag, "rpath", str(tag.entry.d_val))
+                elif tag.entry.d_tag == "DT_RUNPATH":
+                    runpath = getattr(tag, "runpath", str(tag.entry.d_val))
 
         # 1. NX (No-Execute) check via PT_GNU_STACK
         if is_relocatable:
@@ -337,6 +364,10 @@ class ELFAuditor:
             elf_type=str(e_type),
             is_stripped=is_stripped,
             is_static=is_static,
+            interpreter=interpreter,
+            rpath=rpath,
+            runpath=runpath,
+            symbol_count=len(all_symbols),
             nx=nx_status,
             pie=pie_status,
             relro=relro_status,
