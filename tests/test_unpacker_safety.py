@@ -173,3 +173,19 @@ def test_unsupported_format_detection(tmp_path):
 
     assert "Unsupported firmware format 'squashfs'" in str(exc.value)
 
+
+
+def test_decompression_bomb_ratio_enforcement(tmp_path):
+    """Verify that decompression bombs with excessive compression ratio are blocked."""
+    bomb_zip = tmp_path / "ratio_bomb.zip"
+    with zipfile.ZipFile(bomb_zip, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("zeros.txt", b"0" * 200000)
+
+    # Set threshold of 20:1
+    extractor = SafeExtractor(max_decompression_ratio=20.0)
+    out_dir = tmp_path / "extracted_ratio_bomb"
+
+    with pytest.raises(SecurityException) as exc:
+        extractor.extract(bomb_zip, out_dir)
+
+    assert "Decompression bomb detected" in str(exc.value)

@@ -24,6 +24,7 @@ from firmwarex.core.raw_detector import (
 )
 
 MAX_NESTING_DEPTH = 3
+MAX_DECOMPRESSION_RATIO = 100.0
 
 
 class SecurityException(Exception):
@@ -46,6 +47,9 @@ class FileInventoryItem:
     parent_archive: str = "root"
     nesting_level: int = 0
     source_offset: int | None = None
+    architecture: str | None = None
+    endianness: str | None = None
+    bitness: int | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -109,7 +113,7 @@ def detect_format_detailed(file_path: Path) -> tuple[str, bool, list[DetectedSig
         if fmt_id == "xz" and any(file_name.endswith(ext) for ext in [".tar.xz", ".txz"]):
             return "xz_tar", True, signatures
         # CramFS, TRX, and uImage are supported by modular extractors in Phase 4
-        if fmt_id in ("cramfs", "trx", "uimage", "jffs2"):
+        if fmt_id in ("cramfs", "trx", "uimage", "jffs2", "cpio"):
             return fmt_id, True, signatures
         return fmt_id, is_supported, signatures
 
@@ -151,22 +155,41 @@ def _is_safe_path(base_dir: Path, target_path: Path) -> bool:
         return False
 
 
-def _classify_file(file_path: Path) -> tuple[str, bool, bool]:
-    """Classify file type, ELF status, and executable flags."""
+def _classify_file(file_path: Path) -> tuple[str, bool, bool, str | None, str | None, int | None]:
+    """Classify file type, ELF status, executable flags, architecture, endianness, and bitness."""
     if file_path.is_dir():
-        return "directory", False, False
+        return "directory", False, False, None, None, None
 
     is_elf = False
     is_exec = False
     file_type = "binary"
+    arch = None
+    endianness = None
+    bitness = None
 
     try:
         with open(file_path, "rb") as f:
-            header = f.read(4)
-            if header == b"\x7fELF":
+            header = f.read(20)
+            if header.startswith(b"\x7fELF") and len(header) >= 16:
                 is_elf = True
                 is_exec = True
                 file_type = "elf_binary"
+                ei_class = header[4]
+                bitness = 32 if ei_class == 1 else (64 if ei_class == 2 else None)
+                ei_data = header[5]
+                endianness = "little" if ei_data == 1 else ("big" if ei_data == 2 else None)
+                if len(header) >= 20 and endianness:
+                    import struct
+                    fmt = "<H" if endianness == "little" else ">H"
+                    e_machine = struct.unpack(fmt, header[18:20])[0]
+                    MACH_MAP = {
+                        0x03: "x86",
+                        0x3E: "x86_64",
+                        0x28: "arm",
+                        0xB7: "arm64",
+                        0x08: "mips",
+                    }
+                    arch = MACH_MAP.get(e_machine, f"machine_{e_machine:#x}")
     except Exception:
         pass
 
@@ -182,7 +205,7 @@ def _classify_file(file_path: Path) -> tuple[str, bool, bool]:
         elif any(name_lower.endswith(ext) for ext in [".txt", ".md", ".log", ".html", ".htm"]):
             file_type = "text"
 
-    return file_type, is_elf, is_exec
+    return file_type, is_elf, is_exec, arch, endianness, bitness
 
 
 class SafeExtractor:
@@ -193,10 +216,12 @@ class SafeExtractor:
         max_file_count: int = MAX_FILE_COUNT,
         max_uncompressed_size: int = MAX_UNCOMPRESSED_SIZE_BYTES,
         max_nesting_depth: int = MAX_NESTING_DEPTH,
+        max_decompression_ratio: float = MAX_DECOMPRESSION_RATIO,
     ):
         self.max_file_count = max_file_count
         self.max_uncompressed_size = max_uncompressed_size
         self.max_nesting_depth = max_nesting_depth
+        self.max_decompression_ratio = max_decompression_ratio
         self._cumulative_file_count = 0
         self._cumulative_uncompressed_size = 0
 
@@ -234,7 +259,7 @@ class SafeExtractor:
                 result = self._extract_zip(archive_path, resolved_out, nesting_level=0, parent="root")
             elif fmt in ("tar", "gzip_tar", "bzip2_tar", "xz_tar", "gzip", "bzip2", "xz"):
                 result = self._extract_tar(archive_path, resolved_out, nesting_level=0, parent="root")
-            elif fmt in ("cramfs", "trx", "uimage", "jffs2", "squashfs"):
+            elif fmt in ("cramfs", "trx", "uimage", "jffs2", "squashfs", "ubifs", "cpio"):
                 from firmwarex.core.extractors.base import ExtractionStatus, SecurityViolationError
                 from firmwarex.core.extractors.registry import ExtractorRegistry
                 try:
@@ -305,6 +330,7 @@ class SafeExtractor:
         errors: list[str] = []
 
         try:
+            archive_size = zip_path.stat().st_size
             with zipfile.ZipFile(zip_path, "r") as zf:
                 # 1. Pre-flight check: validate paths and size quotas
                 for member in zf.infolist():
@@ -320,6 +346,10 @@ class SafeExtractor:
                     if self._cumulative_uncompressed_size > self.max_uncompressed_size:
                         raise SecurityException(
                             f"Extraction aborted: Archive uncompressed size exceeds limit ({self.max_uncompressed_size} bytes)."
+                        )
+                    if archive_size > 100 and total_size > 10000 and (total_size / archive_size) > self.max_decompression_ratio:
+                        raise SecurityException(
+                            f"Decompression bomb detected: uncompressed ratio ({total_size / archive_size:.1f}:1) exceeds limit ({self.max_decompression_ratio:.1f}:1)."
                         )
 
                     # Validate path traversal (Zip Slip)
@@ -372,6 +402,7 @@ class SafeExtractor:
         errors: list[str] = []
 
         try:
+            archive_size = tar_path.stat().st_size
             with tarfile.open(tar_path, "r:*") as tf:
                 # 1. Pre-flight quota and safety check
                 for member in tf.getmembers():
@@ -388,6 +419,10 @@ class SafeExtractor:
                         raise SecurityException(
                             f"Extraction aborted: Archive uncompressed size exceeds limit ({self.max_uncompressed_size} bytes)."
                         )
+                    if archive_size > 100 and total_size > 10000 and (total_size / archive_size) > self.max_decompression_ratio:
+                        raise SecurityException(
+                            f"Decompression bomb detected: uncompressed ratio ({total_size / archive_size:.1f}:1) exceeds limit ({self.max_decompression_ratio:.1f}:1)."
+                        )
 
                     # Path traversal check
                     target_dest = (output_dir / member.name).resolve()
@@ -398,7 +433,11 @@ class SafeExtractor:
 
                     # Symlink / Hardlink safety check
                     if member.issym() or member.islnk():
-                        link_target = (output_dir / member.linkname).resolve()
+                        raw_link = member.linkname
+                        if raw_link.startswith(('/', '\\')):
+                            link_target = (output_dir / raw_link.lstrip('/\\')).resolve()
+                        else:
+                            link_target = (target_dest.parent / raw_link).resolve()
                         if not _is_safe_path(output_dir, link_target):
                             raise SecurityException(
                                 f"Malicious symlink/hardlink blocked: '{member.name}' -> '{member.linkname}' points outside sandbox."
@@ -548,7 +587,7 @@ class SafeExtractor:
                 try:
                     file_size = full_file_path.stat().st_size
                     file_sha = compute_sha256(full_file_path)
-                    file_type, is_elf, is_exec = _classify_file(full_file_path)
+                    file_type, is_elf, is_exec, arch, endianness, bitness = _classify_file(full_file_path)
 
                     inventory.append(
                         FileInventoryItem(
@@ -560,6 +599,9 @@ class SafeExtractor:
                             is_executable=is_exec,
                             parent_archive=item_parent,
                             nesting_level=item_nesting_lvl,
+                            architecture=arch,
+                            endianness=endianness,
+                            bitness=bitness,
                         )
                     )
                 except Exception:
