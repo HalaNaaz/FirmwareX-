@@ -29,3 +29,25 @@ class AuditLogger:
             # Audit logging must not crash main application execution
             pass
 
+    def get_events(self, event_type: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
+        """Read recent audit records, optionally filtered by event_type."""
+        if not self.log_path.exists():
+            return []
+        events: list[dict[str, Any]] = []
+        try:
+            with open(self.log_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        record = json.loads(line)
+                        if event_type is None or record.get("event_type") == event_type:
+                            events.append(record)
+                    except json.JSONDecodeError:
+                        continue
+        except Exception:
+            return []
+        return events[-limit:]
+
+
