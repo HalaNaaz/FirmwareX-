@@ -169,9 +169,16 @@ class ProtocolMutator:
 class ProtocolFuzzRunner:
     """Executes bounded defensive fuzzing loops strictly against loopback targets."""
 
-    def __init__(self, config: FuzzConfig | None = None):
+    def __init__(
+        self,
+        config: FuzzConfig | None = None,
+        corpus_manager=None,
+        crash_deduplicator=None,
+    ):
         self.config = config or FuzzConfig()
         self.mutator = ProtocolMutator(seed=self.config.seed)
+        self.corpus_manager = corpus_manager
+        self.crash_deduplicator = crash_deduplicator
 
     def run_fuzzing_session(self) -> FuzzSessionReport:
         """Run a complete bounded fuzz testing session.
@@ -186,6 +193,14 @@ class ProtocolFuzzRunner:
                 f"Defensive fuzzing safety boundary violation: target '{host}' is outside loopback. "
                 "Fuzz testing is strictly forbidden against non-local network endpoints."
             )
+
+        # Confirm target does not resolve to external IP
+        try:
+            resolved_ip = socket.gethostbyname(host)
+            if not resolved_ip.startswith("127.") and resolved_ip != "::1":
+                raise PermissionError(f"Target '{host}' resolved to non-loopback address: {resolved_ip}")
+        except socket.gaierror:
+            pass
 
         start_time = time.time()
         anomalies: list[FuzzAnomalyRecord] = []
