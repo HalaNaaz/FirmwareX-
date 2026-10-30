@@ -222,6 +222,44 @@ KNOWN_SIGNATURES: list[dict] = [
         "is_supported_natively": True,
         "recommended_tool": "builtin_tar_extractor",
     },
+    # CPIO initramfs / initrd archives
+    {
+        "format_id": "cpio",
+        "name": "CPIO Archive (SVR4 Portable newc)",
+        "magic": b"070701",
+        "endianness": "ascii",
+        "description": "Standard Linux initramfs archive (SVR4 without CRC).",
+        "is_supported_natively": True,
+        "recommended_tool": "builtin_cpio_extractor",
+    },
+    {
+        "format_id": "cpio",
+        "name": "CPIO Archive (SVR4 Portable CRC)",
+        "magic": b"070702",
+        "endianness": "ascii",
+        "description": "Standard Linux initramfs archive with CRC.",
+        "is_supported_natively": True,
+        "recommended_tool": "builtin_cpio_extractor",
+    },
+    {
+        "format_id": "cpio",
+        "name": "CPIO Archive (Old Portable ASCII)",
+        "magic": b"070707",
+        "endianness": "ascii",
+        "description": "Legacy portable ASCII CPIO archive format.",
+        "is_supported_natively": True,
+        "recommended_tool": "builtin_cpio_extractor",
+    },
+    # Linux Ext2/3/4 filesystems
+    {
+        "format_id": "extfs",
+        "name": "Linux Ext2/Ext3/Ext4 Filesystem Superblock",
+        "magic": b"\x53\xef",
+        "endianness": "little",
+        "description": "Linux Second/Third/Fourth Extended Filesystem.",
+        "is_supported_natively": False,
+        "recommended_tool": "7z / guestmount / e2tools",
+    },
     # Standalone ELF
     {
         "format_id": "elf",
