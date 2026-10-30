@@ -1,0 +1,92 @@
+[
+  {
+    "target": "armsr/armv7",
+    "filename": "openwrt-23.05.4-armsr-armv7-rootfs.tar.gz",
+    "sha256": "db1a36978989069da1bc02bda3e4dcf7beaccf2e4806faf6b318c35508db7e8d",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/armsr/armv7/openwrt-23.05.4-armsr-armv7-rootfs.tar.gz"
+  },
+  {
+    "target": "armsr/armv8",
+    "filename": "openwrt-23.05.4-armsr-armv8-rootfs.tar.gz",
+    "sha256": "0ae0cdf86276540c7a0ff93ffb7e2131a485b15a8315d6266e86549c1d21859a",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/armsr/armv8/openwrt-23.05.4-armsr-armv8-rootfs.tar.gz"
+  },
+  {
+    "target": "at91/sam9x",
+    "filename": "openwrt-23.05.4-at91-sam9x-rootfs.tar.gz",
+    "sha256": "093f62bef5e2212e950eeffde34d260fc9eb20ed495f5edb9b2ea80da843e1b6",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/at91/sam9x/openwrt-23.05.4-at91-sam9x-rootfs.tar.gz"
+  },
+  {
+    "target": "at91/sama5",
+    "filename": "openwrt-23.05.4-at91-sama5-rootfs.tar.gz",
+    "sha256": "af6c330256dfa1f2f8b09895a1d8e29509c75b4297d507b511f048da7c572d8c",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/at91/sama5/openwrt-23.05.4-at91-sama5-rootfs.tar.gz"
+  },
+  {
+    "target": "at91/sama7",
+    "filename": "openwrt-23.05.4-at91-sama7-rootfs.tar.gz",
+    "sha256": "1c0827e451a57456a8e38a380689f20c0f47a2622ab6eb28a9c1ef3d4f289ce1",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/at91/sama7/openwrt-23.05.4-at91-sama7-rootfs.tar.gz"
+  },
+  {
+    "target": "imx/cortexa7",
+    "filename": "openwrt-23.05.4-imx-cortexa7-rootfs.tar.gz",
+    "sha256": "a0b0aa288fcc38b00d3cd98fafdd503be8b5ac0c227e5ff2e36dce4506797739",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/imx/cortexa7/openwrt-23.05.4-imx-cortexa7-rootfs.tar.gz"
+  },
+  {
+    "target": "imx/cortexa9",
+    "filename": "openwrt-23.05.4-imx-cortexa9-rootfs.tar.gz",
+    "sha256": "1d4a5b26f21e05db7f5f20a5990e0c363ca486b3863d5b522b1dba093b2c12dc",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/imx/cortexa9/openwrt-23.05.4-imx-cortexa9-rootfs.tar.gz"
+  },
+  {
+    "target": "malta/be",
+    "filename": "openwrt-23.05.4-malta-be-default-rootfs.tar.gz",
+    "sha256": "d2acc58e67e9e540bf126e085761001a0494234ffd44b16ad6ee50a42958940d",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/malta/be/openwrt-23.05.4-malta-be-default-rootfs.tar.gz"
+  },
+  {
+    "target": "mvebu/cortexa53",
+    "filename": "openwrt-23.05.4-mvebu-cortexa53-rootfs.tar.gz",
+    "sha256": "adf507370661d811d00210412be50f39fba915c2e4d6c1b8e7fbbd7c6e1dacc9",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/mvebu/cortexa53/openwrt-23.05.4-mvebu-cortexa53-rootfs.tar.gz"
+  },
+  {
+    "target": "mvebu/cortexa72",
+    "filename": "openwrt-23.05.4-mvebu-cortexa72-rootfs.tar.gz",
+    "sha256": "fb84245b8aa78d22d37d32574539bb6f691d21a67ea300e470225a9906aa46ee",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/mvebu/cortexa72/openwrt-23.05.4-mvebu-cortexa72-rootfs.tar.gz"
+  },
+  {
+    "target": "mvebu/cortexa9",
+    "filename": "openwrt-23.05.4-mvebu-cortexa9-rootfs.tar.gz",
+    "sha256": "188feb31afacf8eff2be0f54a608988564fcf129eac5ebb9f1e75fd4faf20e85",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/mvebu/cortexa9/openwrt-23.05.4-mvebu-cortexa9-rootfs.tar.gz"
+  },
+  {
+    "target": "octeontx/generic",
+    "filename": "openwrt-23.05.4-octeontx-generic-default-rootfs.tar.gz",
+    "sha256": "d06a35589e47f4a11315771744a958c89a7d514adda5ca5d958d833b43bdb345",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/octeontx/generic/openwrt-23.05.4-octeontx-generic-default-rootfs.tar.gz"
+  },
+  {
+    "target": "pistachio/generic",
+    "filename": "openwrt-23.05.4-pistachio-generic-rootfs.tar.gz",
+    "sha256": "fb8405e8368b04c3d957e0a15121506dc800cfbf6b733b5b60471dc759a48697",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/pistachio/generic/openwrt-23.05.4-pistachio-generic-rootfs.tar.gz"
+  },
+  {
+    "target": "x86/64",
+    "filename": "openwrt-23.05.4-x86-64-rootfs.tar.gz",
+    "sha256": "11eb5baedf16b56e8ba59419b502da7866cf7329372730cbc63a559aa99da710",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/x86/64/openwrt-23.05.4-x86-64-rootfs.tar.gz"
+  },
+  {
+    "target": "x86/generic",
+    "filename": "openwrt-23.05.4-x86-generic-rootfs.tar.gz",
+    "sha256": "a66b67cb7e65a5e53bd5c89dcd0f792c147050fd54987212d0f9d6dc493a8daf",
+    "url": "https://downloads.openwrt.org/releases/23.05.4/targets/x86/generic/openwrt-23.05.4-x86-generic-rootfs.tar.gz"
+  }
+]

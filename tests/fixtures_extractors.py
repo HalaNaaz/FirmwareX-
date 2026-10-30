@@ -328,3 +328,83 @@ def create_synthetic_jffs2(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(bytes(buf))
     return output_path
+
+
+def create_synthetic_cpio(
+    output_path: Path,
+    files: dict[str, bytes] | None = None,
+    format_type: str = "newc",
+) -> Path:
+    """Create a minimal, valid, spec-compliant CPIO archive for testing.
+
+    Default format is SVR4 portable ASCII format without CRC ("070701").
+    """
+    if files is None:
+        files = {
+            "etc/hostname": b"firmwarex-iot\n",
+            "bin/init": b"#!/bin/sh\necho init\n",
+        }
+
+    buf = bytearray()
+    ino = 1
+
+    for name_str, content in files.items():
+        name_bytes = name_str.encode("utf-8") + b"\x00"
+        namesize = len(name_bytes)
+        filesize = len(content)
+        mode = 0o100644  # regular file rw-r--r--
+
+        # 110-byte SVR4 newc header
+        hdr_str = (
+            f"070701"
+            f"{ino:08x}"
+            f"{mode:08x}"
+            f"{0:08x}"      # uid
+            f"{0:08x}"      # gid
+            f"{1:08x}"      # nlink
+            f"{0:08x}"      # mtime
+            f"{filesize:08x}"
+            f"{0:08x}"      # devmajor
+            f"{0:08x}"      # devminor
+            f"{0:08x}"      # rdevmajor
+            f"{0:08x}"      # rdevminor
+            f"{namesize:08x}"
+            f"{0:08x}"      # check
+        )
+        buf.extend(hdr_str.encode("ascii"))
+        buf.extend(name_bytes)
+        pad_hdr = (4 - ((110 + namesize) % 4)) % 4
+        buf.extend(b"\x00" * pad_hdr)
+
+        buf.extend(content)
+        pad_data = (4 - (filesize % 4)) % 4
+        buf.extend(b"\x00" * pad_data)
+
+        ino += 1
+
+    # Write TRAILER!!! record
+    trailer_name = b"TRAILER!!!\x00"
+    trailer_hdr = (
+        f"070701"
+        f"{0:08x}"
+        f"{0:08x}"
+        f"{0:08x}"
+        f"{0:08x}"
+        f"{1:08x}"
+        f"{0:08x}"
+        f"{0:08x}"
+        f"{0:08x}"
+        f"{0:08x}"
+        f"{0:08x}"
+        f"{0:08x}"
+        f"{len(trailer_name):08x}"
+        f"{0:08x}"
+    )
+    buf.extend(trailer_hdr.encode("ascii"))
+    buf.extend(trailer_name)
+    pad_trailer = (4 - ((110 + len(trailer_name)) % 4)) % 4
+    buf.extend(b"\x00" * pad_trailer)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(bytes(buf))
+    return output_path
