@@ -9,6 +9,7 @@ from firmwarex.core.extractors.base import (
     ExtractionStatus,
     QuotaTracker,
 )
+from firmwarex.core.extractors.cpio_extractor import CpioExtractor
 from firmwarex.core.extractors.cramfs_extractor import CramfsExtractor
 from firmwarex.core.extractors.jffs2_ubifs_extractor import Jffs2Extractor, UbifsExtractor
 from firmwarex.core.extractors.squashfs_extractor import SquashfsExtractor
@@ -23,6 +24,7 @@ class ExtractorRegistry:
     def __init__(self):
         self._extractors: list[BaseExtractor] = [
             ArchiveExtractor(),
+            CpioExtractor(),
             CramfsExtractor(),
             TrxExtractor(),
             UImageExtractor(),
