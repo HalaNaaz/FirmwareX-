@@ -67,9 +67,27 @@ class StorageManager:
                     sha256 TEXT,
                     is_elf BOOLEAN NOT NULL,
                     is_executable BOOLEAN NOT NULL,
+                    parent_archive TEXT DEFAULT 'root',
+                    nesting_level INTEGER DEFAULT 0,
+                    architecture TEXT,
+                    endianness TEXT,
+                    bitness INTEGER,
                     FOREIGN KEY (firmware_id) REFERENCES firmware(id)
                 )
             """)
+
+            # Dynamic migration for existing database files
+            cursor.execute("PRAGMA table_info(inventory)")
+            existing_cols = {row[1] for row in cursor.fetchall()}
+            for col_name, col_type in [
+                ("parent_archive", "TEXT DEFAULT 'root'"),
+                ("nesting_level", "INTEGER DEFAULT 0"),
+                ("architecture", "TEXT"),
+                ("endianness", "TEXT"),
+                ("bitness", "INTEGER"),
+            ]:
+                if col_name not in existing_cols:
+                    cursor.execute(f"ALTER TABLE inventory ADD COLUMN {col_name} {col_type}")
 
             # Binary audit table
             cursor.execute("""
@@ -220,6 +238,22 @@ class StorageManager:
         finally:
             conn.close()
 
+    def get_job_by_firmware(self, firmware_id: str) -> dict[str, Any] | None:
+        conn = self._get_connection()
+        try:
+            row = conn.execute("SELECT * FROM jobs WHERE firmware_id = ? ORDER BY created_at DESC LIMIT 1", (firmware_id,)).fetchone()
+            return dict(row) if row else None
+        finally:
+            conn.close()
+
+    def list_jobs(self) -> list[dict[str, Any]]:
+        conn = self._get_connection()
+        try:
+            rows = conn.execute("SELECT * FROM jobs ORDER BY created_at DESC").fetchall()
+            return [dict(r) for r in rows]
+        finally:
+            conn.close()
+
     def save_inventory(self, firmware_id: str, items: list[Any]):
         conn = self._get_connection()
         try:
@@ -228,8 +262,8 @@ class StorageManager:
                 for item in items:
                     d = item.to_dict() if hasattr(item, "to_dict") else item
                     conn.execute("""
-                        INSERT INTO inventory (firmware_id, path, type, size_bytes, sha256, is_elf, is_executable, parent_archive, nesting_level)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO inventory (firmware_id, path, type, size_bytes, sha256, is_elf, is_executable, parent_archive, nesting_level, architecture, endianness, bitness)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         firmware_id,
                         d["path"],
@@ -240,6 +274,9 @@ class StorageManager:
                         d.get("is_executable", False),
                         d.get("parent_archive", "root"),
                         d.get("nesting_level", 0),
+                        d.get("architecture"),
+                        d.get("endianness"),
+                        d.get("bitness"),
                     ))
         finally:
             conn.close()

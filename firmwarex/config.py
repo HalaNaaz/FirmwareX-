@@ -42,6 +42,7 @@ SUPPORTED_ARCHIVE_EXTENSIONS = {
     ".tbz2",
     ".tar.xz",
     ".txz",
+    ".cpio",
 }
 
 # Ensure base runtime directories exist
