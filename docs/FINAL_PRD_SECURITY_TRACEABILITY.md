@@ -1,0 +1,38 @@
+# FirmwareX — Final PRD Security Traceability Matrix
+
+**Assessment Date:** 2026-10-30  
+**Authoritative Reference:** `Project Unit42-FirmwareX PRD v1.0`  
+**Classification:** Mandatory Security Controls Compliance & Telemetry Verification  
+**Status Standard:** Strict Evidence-Backed Evaluation (No Unverified Assumptions)
+
+---
+
+## 1. Security Clauses Traceability Matrix
+
+| PRD Clause | Requirement Description | Implementation Reference | Verification Test / Command | Actual Result & Exit Code | Evidence Location | Status |
+|---|---|---|---|---|---|---|
+| **SC-1.1** | **Sandbox Network Egress Blocking:** Untrusted firmware execution must remain strictly inside isolated sandbox with all egress blocked. | `firmwarex/isolation/wsl_engine.py` (`unshare -r -n`) | `wsl -d Ubuntu -- unshare -r -n ping -c 1 -W 2 8.8.8.8` | Exit 1: `connect: Network is unreachable`. Interface `lo` DOWN. | [`docs/SANDBOX_SECURITY_EVIDENCE.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_SECURITY_EVIDENCE.md) | **VERIFIED** |
+| **SC-1.2** | **Contained Network & Strict Isolation:** Protocol fuzzing and network analysis must never touch external or routable IP ranges. | `firmwarex/fuzzing/protocol_fuzzer.py` (`_validate_loopback_target`) | `pytest tests/test_fuzzing.py -k "test_fuzzer_rejects_external_targets"` | PASSED: External IPs (`8.8.8.8`) rejected with `TargetValidationError`. | [`docs/SANDBOX_SECURITY_EVIDENCE.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_SECURITY_EVIDENCE.md) | **VERIFIED** |
+| **SC-1.3** | **Least Privilege & Restricted Execution:** Execution runs rootless with capabilities dropped and privilege escalation disabled. | `firmwarex/isolation/wsl_engine.py` (`NoNewPrivileges=yes`, rootless user namespace) | `pytest tests/test_sandbox_security_hardening.py -k "test_least_privilege_no_new_privileges"` | PASSED: Transient service initialized with `NoNewPrivileges=yes`. | [`docs/SANDBOX_HARDENING_REPORT.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_HARDENING_REPORT.md) | **VERIFIED** |
+| **SC-2.1** | **Resource Quotas & Job Termination:** Unpacker and analysis engines terminate jobs exceeding byte, file count, or compression ratio limits. | `firmwarex/core/unpacker.py` (`MAX_FILE_COUNT=10000`, `MAX_UNCOMPRESSED_SIZE=1GB`, `MAX_DECOMPRESSION_RATIO=100`) | `pytest tests/test_unpacker_safety.py` (all 10 tests) | 10/10 PASSED: Quotas, Zip Slip, and ratio bombs rejected with `SecurityException`. | [`docs/SANDBOX_HARDENING_REPORT.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_HARDENING_REPORT.md) | **VERIFIED** |
+| **SC-2.2** | **Analysis Budget & Time Quotas:** Hard timeouts terminate execution without leaving orphaned processes. | `firmwarex/isolation/wsl_engine.py` (`timeout -s KILL`) | `pytest tests/test_sandbox_security_hardening.py -k "test_hard_timeout_and_process_tree_termination_no_orphans"` | PASSED: Workload terminated in 1.04s (Exit 124); 0 orphaned processes. | [`docs/SANDBOX_HARDENING_REPORT.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_HARDENING_REPORT.md) | **VERIFIED** |
+| **SC-2.3** | **Queue Backpressure & Concurrency:** Saturated queues reject excess jobs and protect active execution slots. | `firmwarex/core/queue_manager.py` (`JobQueueManager`) | `pytest tests/test_queue_concurrency.py` (all 8 tests) | 8/8 PASSED: Exceeded capacity returns HTTP 429 / `QueueBackpressureError`. | [`docs/SANDBOX_HARDENING_REPORT.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_HARDENING_REPORT.md) | **VERIFIED** |
+| **SC-3.1** | **Secret Scanning & Redaction:** Credentials and private keys detected by static analysis must be redacted from outputs. | `firmwarex/core/redactor.py` (`SecretScanner`, `Masking`) | `GET /api/v1/firmware/{id}/findings` | Verified: Secrets masked (`Cad*********************HhT`); SHA-256 evidence ref provided. | [`docs/REAL_FIRMWARE_E2E_EVIDENCE.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/REAL_FIRMWARE_E2E_EVIDENCE.md) | **VERIFIED** |
+| **SC-3.2** | **Salted Fingerprinting & Safe Hashes:** Sensitive strings fingerprinted using cryptographic hashes without raw leakage. | `firmwarex/core/redactor.py` (`hashlib.sha256`) | `tests/test_secret_redactor.py::test_redactor_masking` | PASSED: Salted SHA-256 fingerprint verified for all secret findings. | [`docs/REAL_FIRMWARE_E2E_EVIDENCE.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/REAL_FIRMWARE_E2E_EVIDENCE.md) | **VERIFIED** |
+| **SC-3.3** | **Authorized Access & Auditing:** Unredacted artifact downloads and secret reveals gated by RBAC and logged without plaintext secrets. | `firmwarex/api/routes.py`, `firmwarex/api/auth.py`, `firmwarex/api/audit_log.py` | `pytest tests/test_authorized_access_audit.py` (all 6 tests) | 6/6 PASSED: RBAC enforced; audit log records access events without plaintext secret. | [`docs/FINAL_SECURITY_AUDIT.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/FINAL_SECURITY_AUDIT.md) | **VERIFIED** |
+| **NFR-SEC-1** | **Windows Host Isolation:** Untrusted firmware ELF binaries must never be executed directly on the host operating system. | `firmwarex/isolation/wsl_engine.py` (WSL2/QEMU dispatch) | `pytest tests/test_sandbox_security_hardening.py -k "test_windows_host_isolation_fails_closed"` | PASSED: PE loader rejects ELF binaries (`WinError 193`). Zero Windows host execution. | [`docs/SANDBOX_SECURITY_EVIDENCE.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_SECURITY_EVIDENCE.md) | **VERIFIED** |
+| **NFR-SEC-2** | **Zip Slip & Path Traversal Defense:** Extraction must never write files outside the target sandbox directory. | `firmwarex/core/unpacker.py` (`_is_safe_path`) | `pytest tests/test_unpacker_safety.py -k "test_zip_slip_traversal_rejection"` | PASSED: Malicious paths (`../../outside.txt`) rejected before write. | [`docs/SANDBOX_HARDENING_REPORT.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_HARDENING_REPORT.md) | **VERIFIED** |
+| **NFR-PERF-1** | **Execution Timeout Quota:** Emulation or symbolic execution exceeding budget is aborted cleanly. | `firmwarex/isolation/wsl_engine.py` (`DEFAULT_TIMEOUT_SECONDS = 5.0`) | `tests/test_dynamic_analysis_blockers.py -k "test_symbolic_budget_exhaustion_behavior"` | PASSED: 5-step exploration budget halts safely without freezing. | [`docs/SANDBOX_SECURITY_EVIDENCE.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_SECURITY_EVIDENCE.md) | **VERIFIED** |
+| **NFR-PERF-2** | **Memory Resource Enforcement:** Linux kernel cgroup v2 memory quota terminates rogue workloads. | `firmwarex/isolation/wsl_engine.py` (`systemd-run -p MemoryMax=...`) | `tests/test_sandbox_security_hardening.py -k "test_cgroup_v2_memory_quota_oom_termination"` | PASSED: Workload exceeding limit terminated by Linux kernel OOM killer (`status=9/KILL`). | [`docs/SANDBOX_HARDENING_REPORT.md`](file:///c:/Users/Hala/Downloads/Project%20Files/FirmwareX/docs/SANDBOX_HARDENING_REPORT.md) | **VERIFIED** |
+| **Docker-Only** | **Docker Daemon Sandbox:** Container isolation via Docker engine. | `firmwarex/emulation/qemu_adapter.py` (`DisposableSandbox`) | `tests/test_live_containment.py` | SKIPPED: Docker daemon inactive on host workstation. Equivalent controls verified via WSL2. | **NOT VERIFIED (Workstation Docker Inactive)** |
+
+---
+
+## 2. Compliance Summary
+
+- **Total PRD Security Clauses Evaluated:** 14
+- **VERIFIED:** 13 (92.9%)
+- **NOT VERIFIED (Environmental Blocker):** 1 (Docker daemon inactive on local workstation)
+- **FAILED:** 0
+- **PARTIALLY VERIFIED:** 0
+

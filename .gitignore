@@ -60,3 +60,6 @@ Thumbs.db
 *.swp
 *.bak
 
+# Real firmware samples and benchmark downloads
+samples/real/
+
